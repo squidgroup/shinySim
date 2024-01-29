@@ -36,17 +36,17 @@ names(params)<-components
 
 
 
-all_names <- sapply(params[-1], function(x) x$names)
-names(params)
+# all_names <- sapply(params[-1], function(x) x$names)
+# names(params)
 
-# params[components[! components %in% c("intercept","interactions","residual")]]
+# # params[components[! components %in% c("intercept","interactions","residual")]]
 
-fix_beta <- sapply(params[components[! components %in% c("intercept","interactions","residual")]
-], function(x){
-	if(all(x$beta%in%c(0,1))){ FALSE }else{ TRUE}
-})
-predictor <- names(fix_beta)[fix_beta]
-random <- names(fix_beta)[!fix_beta]
+# fix_beta <- sapply(params[components[! components %in% c("intercept","interactions","residual")]
+# ], function(x){
+# 	if(all(x$beta%in%c(0,1))){ FALSE }else{ TRUE}
+# })
+# predictor <- names(fix_beta)[fix_beta]
+# random <- names(fix_beta)[!fix_beta]
 
 ## collapse_predictor option would make them all x
 
@@ -77,7 +77,7 @@ colors[!names(colors)%in% c("observation") ] <-
 palette.colors()[4:(3+sum(!names(colors)%in% c("observation") ))]
 
 
-colors <- palette.colors()
+# colors <- palette.colors()
 ## intercept 1, residual 2
 
 
