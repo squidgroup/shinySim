@@ -2,28 +2,37 @@
 
 ui <- function() {
   shinydashboard::dashboardPage(
+    #packages we need
     shinyjs::useShinyjs(),
+    
+    #headercode
     header = shinydashboard::dashboardHeader(
-      title = tags$img(src = "squidSim_logo.png", height = "80", width = "80")
+      title = "shinySim",
+      shinydashboardPlus::userOutput("user")
     ),
+    
+    #sidebarcode
     sidebar = shinydashboard::dashboardSidebar(
       width = 300,
       shiny::br(),
+      
+      ##input sturcture box
       shinydashboard::box(
         width = 12,
         status = "primary",
         solidHeader = TRUE,
         title = "Data Structure",
-        
+        #textinput
         shiny::textInput("input_structure", label = NULL)
       ),
       
+      ##input component box
       shinydashboard::box(
         width = 12,
         status = "primary",
         solidHeader = TRUE,
         title = "Add Component",
-        
+        #pickerinput
         shinyWidgets::pickerInput(
           inputId = "input_group",
           label = NULL,
@@ -33,7 +42,7 @@ ui <- function() {
             title = "Group"
           )
         ),
-        
+        #hidden group name
         shinyjs::hidden(
           shiny::div(
             id = "group_name",
@@ -42,12 +51,13 @@ ui <- function() {
             )
           )
         ),
-        
+        #variable number
         shiny::numericInput(
           inputId = "input_variable_no",
           label = shiny::tags$span(style = "color: black;", "Number of Variables"),
-          1, min = 1, max = 10
+          value = 1, min = 1, max = 10
         ),
+        #hidden input component
         shinyjs::hidden(
           shiny::div(
             id = "component_type",
@@ -63,27 +73,44 @@ ui <- function() {
           )
         )
           )
-        )
-        
-        shinyjs::hidden(
-          shiny::div(
-            id = "parameter_table",
-            
-        
+        ),
+        #tables#
+          DT::DTOutput("name_table"),
+          DT::DTOutput("mean_table"),
+          DT::DTOutput("beta_table"),
+          DT::DTOutput("vcov_table"),
+        #covcorr radio
+          shinyWidgets::radioGroupButtons(
+            inputId = "input_covcorr",
+            label = NULL,
+            choices = c("Corr", 
+                        "Cov"),
+            direction = "horizontal",
+            individual = TRUE,
+            checkIcon = list(
+              yes = tags$i(class = "fa fa-check-square", 
+                           style = "color: steelblue"),
+              no = tags$i(class = "fa fa-square-o", 
+                          style = "color: steelblue"))
+          )
       ),
 
       # depending on each component different things come up.
       # Hidden boxes - four things. little tables.
       # names - always comes up, depends on numerinput
       # names, mean and beta, number of elements equal to input variable number.
+      # 1xn
       # vcov, little matrix (n by n).
+      #n = variables
       # radio button with covariance or correlation.
 
+    ##edit compment box
       shinydashboard::box(
         width = 12,
         status = "primary",
         solidHeader = TRUE,
         title = "Edit Component",
+        #pickerinput for component
         shinyWidgets::pickerInput(
           inputId = "edit_component",
           label = NULL,
@@ -95,6 +122,7 @@ ui <- function() {
             title = "Choose component"
           )
         ),
+        #pickerinput to select group
         shinyWidgets::pickerInput(
           inputId = "edit_group",
           label = NULL,
@@ -105,22 +133,26 @@ ui <- function() {
         ),
       )
     ),
+    #dashbaord main
     body = shinydashboard::dashboardBody(
       shiny::fluidRow(
+        ##component output
         shinydashboard::box(
           width = 12, status = "primary", solidHeader = TRUE,
           title = "Simulation Components",
-          shiny::textOutput("output_component")
+          shiny::uiOutput("output_component")
         ),
+        ##equation output
         shinydashboard::box(
           width = 12, status = "primary", solidHeader = TRUE,
           title = "Simulation Equation",
-          shiny::textOutput("output_equation")
+          shiny::uiOutput("output_equation")
         ),
+        ##code output
         shinydashboard::box(
           width = 12, status = "primary", solidHeader = TRUE,
           title = "Simulation Code",
-          shiny::textOutput("output_code")
+          shiny::uiOutput("output_code")
         )
       )
     )
