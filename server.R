@@ -119,5 +119,21 @@ server <- function(input, output, session){
       )
     )
           })
-    
+  
+
+  output$output_equation <- renderUI({
+  
+    withMathJax("$$\\color{#000000}{\\beta_0} + \\color{#009E73}{w_{j}} + \\color{#F0E442}{\\beta_{v} v_{j}} + \\color{#56B4E9}{\\beta_{x,1} x_{1,i}} + \\color{#56B4E9}{\\beta_{x,2} x_{2,i}} + \\color{#E69F00}{\\epsilon_i}$$")
+
+  })
+
+  output$output_component <- renderText({
+   paste(
+    "<span style=\"color:#000000\">intercept</span>",
+    "<span style=\"color:#009E73\">individual_random</span>",
+    "<span style=\"color:#F0E442\">individual_predictors</span>",
+    "<span style=\"color:#56B4E9\">observation</span>",
+    "<span style=\"color:#E69F00\">residual</span>",
+     sep=" + ")
+})
 }
