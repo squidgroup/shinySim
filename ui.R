@@ -45,9 +45,10 @@ ui <- function() {
         #hidden group name
         shinyjs::hidden(
           shiny::div(
-            id = "group_name",
-            shiny::textInput("input_group_name",
-              label = shiny::tags$span(style = "color: grey;", "Group Name (optional)")
+            id = "component_name",
+            shiny::textInput("input_component_name",
+                             value = "",
+              label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
             )
           )
         ),
@@ -92,7 +93,8 @@ ui <- function() {
                            style = "color: steelblue"),
               no = tags$i(class = "fa fa-square-o", 
                           style = "color: steelblue"))
-          )
+          ),
+        shiny::actionButton(inputId = "add_to_parameters", "Add")
       ),
 
       # depending on each component different things come up.
