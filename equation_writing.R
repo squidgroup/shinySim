@@ -27,6 +27,8 @@
 # 		)
 
 # 	)
+# parameters <- dd$parameters
+
 
 # dd <- simulate_population(n=20,
 # 	parameters=list(
@@ -42,7 +44,7 @@ make_equation<-function(parameters, print_colours=TRUE){
 	params<-lapply(components,function(x)c(parameters[[x]], component=x))
 	names(params)<-components
 
-
+reserved_names <- c("intercept","observation","interactions","residual")
 
 
 	# all_names <- sapply(params[-1], function(x) x$names)
@@ -59,7 +61,6 @@ make_equation<-function(parameters, print_colours=TRUE){
 
 	## collapse_predictor option would make them all x
 
-	added_comp <- components[! components %in% c("intercept","interactions","residual")]
 
 
 
@@ -71,29 +72,27 @@ make_equation<-function(parameters, print_colours=TRUE){
 	subscripts[c("observation")] <- "i"
 	subscripts[!names(subscripts)%in% c("observation") ] <- letters[10:(9+sum(!names(subscripts)%in% c("observation") ))]
 
-	# all_subscripts <- sapply(params[components[! components %in% c("intercept","interactions","residual")]], function(x) unname(subscripts[x$group] ))
 
 
-	colors <- all_letters <- rep(NA,length(added_comp))
-	names(colors)<- names(all_letters)<- added_comp
+	added_comp <- components[! components %in% c("intercept","interactions","residual")]
+
+	all_letters <- rep(NA,length(added_comp))
+	names(all_letters)<- added_comp
 	all_letters["observation"] <- "x"
-	colors["observation"] <- palette.colors()[3]
-
 	all_letters[!names(all_letters)%in% c("observation") ] <- 
 	letters[23:(24-sum(!names(all_letters)%in% c("observation") ))]
-
-	colors[!names(colors)%in% c("observation") ] <- 
-	palette.colors()[4:(3+sum(!names(colors)%in% c("observation") ))]
+	
 
 
-	# colors <- palette.colors()
-	## intercept 1, residual 2
+	colors <- rep(NA,length(components))
+	names(colors) <- components
+	colors["intercept"] <- palette.colors()[1]
+	colors["residual"] <- palette.colors()[2]
+	# colors["observation"] <- palette.colors()[3]
+	colors[!names(colors) %in% c("intercept","residual") ] <- 
+	palette.colors()[4:(3+sum(!names(colors)%in% c("intercept","residual") ))]
 
 
-
-	## give predictors and random variables different letters
-	# "x","w","z"
-	# "t","u","v"
 
 	## maybe of all predictors, then compress in here?
 	all <- do.call(rbind,c(lapply(params[components[! components %in% c("intercept","interactions","residual")]], function(x) data.frame(
