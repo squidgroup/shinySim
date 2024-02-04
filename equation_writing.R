@@ -33,7 +33,10 @@
 # 		residual=list(
 # 		vcov=1)))
 
-make_equation<-function(parameters){
+# parameters<-dd$parameters
+
+
+make_equation<-function(parameters, print_colours=TRUE){
 
 	components <- names(parameters)
 	params<-lapply(components,function(x)c(parameters[[x]], component=x))
@@ -112,18 +115,37 @@ make_equation<-function(parameters){
 
 	all$variable_display <- ifelse(all$display,paste0(all$letter,"_{",ifelse(all$display_n,paste0(all$variable_n,","),""),all$subscript,"}"),"")
 
-	paste(
-		c("\\beta_0",
-			paste0(all$beta_display,all$variable_display),
-			"\\epsilon_i"),
-	collapse=" + ")
+## add in interactions. colour - beta interaction colour, and other terms their respective colours
+
+	if(print_colours){
+		list(
+			equation = paste(
+				c(paste0("\\color{",palette.colors()[1],"}{\\beta_0} +"),
+					paste0(ifelse(all$display,paste0("\\color{",all$color,"}{"),""),all$beta_display,all$variable_display,ifelse(all$display,"} +","")),
+					paste0("\\color{",palette.colors()[2],"}{\\epsilon_i}")),
+				collapse=" "),
+
+			components = paste(
+				components,
+				collapse=" + ")	
+		)
+	}else{
+		list(
+			equation = paste(
+				c("\\beta_0",
+					paste0(all$beta_display,all$variable_display),
+					"\\epsilon_i"),
+				collapse=" + "),
+	
+			components = paste(
+				components,
+				collapse=" + ")	
+		)
+	}
 
 
-	paste(
-		c(paste0("\\color{",palette.colors()[1],"}{\\beta_0} +"),
-			paste0(ifelse(all$display,paste0("\\color{",all$color,"}{"),""),all$beta_display,all$variable_display,ifelse(all$display,"} +","")),
-			paste0("\\color{",palette.colors()[2],"}{\\epsilon_i}")),
-	collapse=" ")
+
+
 
 
 }
@@ -131,3 +153,10 @@ make_equation<-function(parameters){
 # make_equation(dd$parameters)
 # https://stackoverflow.com/questions/71616552/how-do-i-dynamically-change-label-text-color-of-r-shiny-radiobuttons-widget-when
 
+   # paste(
+   #  "<span style=\"color:#000000\">intercept</span>",
+   #  "<span style=\"color:#009E73\">individual_random</span>",
+   #  "<span style=\"color:#F0E442\">individual_predictors</span>",
+   #  "<span style=\"color:#56B4E9\">observation</span>",
+   #  "<span style=\"color:#E69F00\">residual</span>",
+   #   sep=" + ")
