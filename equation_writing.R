@@ -124,8 +124,12 @@ reserved_names <- c("intercept","observation","interactions","residual")
 					paste0("\\color{",palette.colors()[2],"}{\\epsilon_i}")),
 				collapse=" "),
 
-			components = paste(
-				components,
+			components = paste(paste0(
+				"<span style=\"color:",colors ,"\">",components,"</span>"),
+				collapse=" + "),
+
+			code = paste(paste0(
+				"<span style=\"color:",colors ,"\">",components,"</span>"),
 				collapse=" + ")	
 		)
 	}else{
@@ -141,21 +145,31 @@ reserved_names <- c("intercept","observation","interactions","residual")
 				collapse=" + ")	
 		)
 	}
-
-
-
-
-
-
 }
+
+paste0(x$component, "= list(\n"),
+paste("intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),\n")
+
+
+x<-params[["blah"]]
+
+
+sapply(params[added_comp], function(x) { c(	
+	if(x$component !=	x$group) paste0("group = ",x$group,",\n"),
+	if(all(x$beta!=1)) paste0("beta = c(",paste0(x$beta,collapse=","),"),\n"),
+	if(all(x$mean!=0)) paste0("mean = c(",paste0(x$mean,collapse=","),"),\n")
+)
+	})
+	
+
+
+paste("intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),")
+
+
+
+c()
+
 
 # make_equation(dd$parameters)
 # https://stackoverflow.com/questions/71616552/how-do-i-dynamically-change-label-text-color-of-r-shiny-radiobuttons-widget-when
 
-   # paste(
-   #  "<span style=\"color:#000000\">intercept</span>",
-   #  "<span style=\"color:#009E73\">individual_random</span>",
-   #  "<span style=\"color:#F0E442\">individual_predictors</span>",
-   #  "<span style=\"color:#56B4E9\">observation</span>",
-   #  "<span style=\"color:#E69F00\">residual</span>",
-   #   sep=" + ")

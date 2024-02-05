@@ -225,5 +225,15 @@ server <- function(input, output, session){
       "<span style=\"color:#E69F00\">residual</span>",
       sep=" + ")
   })
+
+  output$output_code <- renderText({
+    paste(
+      "<span style=\"color:#000000\">intercept</span>",
+      "<span style=\"color:#009E73\">individual_random</span>",
+      "<span style=\"color:#F0E442\">individual_predictors</span>",
+      "<span style=\"color:#56B4E9\">observation</span>",
+      "<span style=\"color:#E69F00\">residual</span>",
+      sep=" + ")
+  })
     
 }
