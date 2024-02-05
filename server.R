@@ -5,10 +5,10 @@ server <- function(input, output, session){
   #named_list
   name_list <- shiny::reactiveValues(x = NULL)
   #table data
-  name_tab <- shiny::reactiveValues(x = NULL)
-  beta_tab <- shiny::reactiveValues(x = NULL)
-  mean_tab <- shiny::reactiveValues(x = NULL)
-  vcov_tab <- shiny::reactiveValues(x = NULL)
+  name_tab <- shiny::reactiveValues(x = data.frame(Name = NA))
+  beta_tab <- shiny::reactiveValues(x = data.frame(Beta = NA))
+  mean_tab <- shiny::reactiveValues(x = data.frame(Mean = NA))
+  vcov_tab <- shiny::reactiveValues(x = data.frame(Vcov = NA))
   #parameter list
   param_list <- shiny::reactiveValues(residual = list(vcov = 1), intercept = 0)
   
@@ -31,14 +31,35 @@ server <- function(input, output, session){
   #create tables based on input
   shiny::observeEvent(input$input_variable_no, {
     
+    observe({
+      num_rows <- input$input_variable_no
+      new_rows <- rep("NA", num_rows)
+      update_df <- data.frame(Name = new_rows)
+      name_tab$x <- update_df
+    })
     
-    #name table
-   observe({
-    num_rows <- input$input_variable_no
-    df <- data.frame(matrix(ncol = 1, nrow = num_rows))
-    colnames(df) <- c("Name")
-    name_tab$x <- df
-  })
+    observe({
+      num_rows <- input$input_variable_no
+      new_rows <- rep("NA", num_rows)
+      update_df <- data.frame(Beta = new_rows)
+      beta_tab$x <- update_df
+    })
+    
+    observe({
+      num_rows <- input$input_variable_no
+      new_rows <- rep("NA", num_rows)
+      update_df <- data.frame(Mean = new_rows)
+      mean_tab$x <- update_df
+    })
+    
+    #vcov_table
+    observe({
+      num_rows <- input$input_variable_no
+      num_cols <- input$input_variable_no
+      update_df <- data.frame(matrix(0, ncol = num_cols, nrow = num_rows))
+      colnames(update_df) <- 1:num_rows
+      vcov_tab$x <- update_df
+    })
     
       output$name_table <- DT::renderDT(
         DT::datatable(
@@ -50,14 +71,6 @@ server <- function(input, output, session){
         )
       )
 
-      #mean_table
-       observe({
-        num_rows <- input$input_variable_no
-        df <- data.frame(matrix(ncol = 1, nrow = num_rows))
-        colnames(df) <- c("Mean")
-        mean_tab$x <- df
-      })
-      
       output$mean_table <- DT::renderDT(
         DT::datatable(
           mean_tab$x,
@@ -68,14 +81,7 @@ server <- function(input, output, session){
         )
       )
       
-      #beta_table
-      observe({
-        num_rows <- input$input_variable_no
-        df <- data.frame(matrix(ncol = 1, nrow = num_rows))
-        colnames(df) <- c("beta")
-        beta_tab$x <- df
-      })
-      
+
       output$beta_table <- DT::renderDT(
         DT::datatable(
           beta_tab$x,
@@ -85,15 +91,6 @@ server <- function(input, output, session){
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
         )
       )
-      
-      #vcov_table
-      observe({
-        num_rows <- input$input_variable_no
-        num_cols <- input$input_variable_no
-        df <- data.frame(matrix(ncol = num_cols, nrow = num_rows))
-        colnames(df) <- 1:num_rows
-        vcov_tab$x <- df
-      })
 
       output$vcov_table <- DT::renderDT(
         DT::datatable(
@@ -116,8 +113,14 @@ server <- function(input, output, session){
   #record the data edit
   shiny::observeEvent(input$name_table_cell_edit, {
     info <- input$name_table_cell_edit
-    name_tab$x <<- DT::editData(name_tab$x, info)
-    DT::replaceData(proxy_name, name_tab$x,resetPaging = FALSE)
+    i <- info$row
+    j <- info$col
+    v <- info$value
+    
+    name_tab$x[i, j] <<- DT::coerceValue(v, name_tab$x[i, j])
+    DT::replaceData(proxy_name, name_tab$x, resetPaging = FALSE)
+   str(name_tab$x)
+   print(name_tab$x)
   })
   
   #record the data edit
@@ -129,6 +132,7 @@ server <- function(input, output, session){
     
     vcov_tab$x[i, j] <<- DT::coerceValue(v, vcov_tab$x[i, j])
     DT::replaceData(proxy_vcov, vcov_tab$x, resetPaging = FALSE)
+    str(vcov_tab$x)
   })
   
   #record the data edit
@@ -140,6 +144,7 @@ server <- function(input, output, session){
     
     beta_tab$x[i, j] <<- DT::coerceValue(v, beta_tab$x[i, j])
     DT::replaceData(proxy_beta, beta_tab$x,resetPaging = FALSE)
+    str(beta_tab$x)
   })
   
   #record the data edit
@@ -151,6 +156,7 @@ server <- function(input, output, session){
     
     mean_tab$x[i, j] <<- DT::coerceValue(v, mean_tab$x[i, j])
     DT::replaceData(proxy_mean, mean_tab$x,resetPaging = FALSE)
+    str(mean_tab$x)
   })
 
   #add button adds to list
