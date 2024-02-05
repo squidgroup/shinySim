@@ -35,7 +35,10 @@
 # 		residual=list(
 # 		vcov=1)))
 
-make_equation<-function(parameters){
+# parameters<-dd$parameters
+
+
+make_equation<-function(parameters, print_colours=TRUE){
 
 	components <- names(parameters)
 	params<-lapply(components,function(x)c(parameters[[x]], component=x))
@@ -111,21 +114,61 @@ reserved_names <- c("intercept","observation","interactions","residual")
 
 	all$variable_display <- ifelse(all$display,paste0(all$letter,"_{",ifelse(all$display_n,paste0(all$variable_n,","),""),all$subscript,"}"),"")
 
-	paste(
-		c("\\beta_0",
-			paste0(all$beta_display,all$variable_display),
-			"\\epsilon_i"),
-	collapse=" + ")
+## add in interactions. colour - beta interaction colour, and other terms their respective colours
 
+	if(print_colours){
+		list(
+			equation = paste(
+				c(paste0("\\color{",palette.colors()[1],"}{\\beta_0} +"),
+					paste0(ifelse(all$display,paste0("\\color{",all$color,"}{"),""),all$beta_display,all$variable_display,ifelse(all$display,"} +","")),
+					paste0("\\color{",palette.colors()[2],"}{\\epsilon_i}")),
+				collapse=" "),
 
-	paste(
-		c(paste0("\\color{",palette.colors()[1],"}{\\beta_0} +"),
-			paste0(ifelse(all$display,paste0("\\color{",all$color,"}{"),""),all$beta_display,all$variable_display,ifelse(all$display,"} +","")),
-			paste0("\\color{",palette.colors()[2],"}{\\epsilon_i}")),
-	collapse=" ")
+			components = paste(paste0(
+				"<span style=\"color:",colors ,"\">",components,"</span>"),
+				collapse=" + "),
 
-
+			code = paste(paste0(
+				"<span style=\"color:",colors ,"\">",components,"</span>"),
+				collapse=" + ")	
+		)
+	}else{
+		list(
+			equation = paste(
+				c("\\beta_0",
+					paste0(all$beta_display,all$variable_display),
+					"\\epsilon_i"),
+				collapse=" + "),
+	
+			components = paste(
+				components,
+				collapse=" + ")	
+		)
+	}
 }
+
+paste0(x$component, "= list(\n"),
+paste("intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),\n")
+
+
+x<-params[["blah"]]
+
+
+sapply(params[added_comp], function(x) { c(	
+	if(x$component !=	x$group) paste0("group = ",x$group,",\n"),
+	if(all(x$beta!=1)) paste0("beta = c(",paste0(x$beta,collapse=","),"),\n"),
+	if(all(x$mean!=0)) paste0("mean = c(",paste0(x$mean,collapse=","),"),\n")
+)
+	})
+	
+
+
+paste("intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),")
+
+
+
+c()
+
 
 # make_equation(dd$parameters)
 # https://stackoverflow.com/questions/71616552/how-do-i-dynamically-change-label-text-color-of-r-shiny-radiobuttons-widget-when
