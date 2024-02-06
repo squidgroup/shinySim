@@ -10,8 +10,12 @@ server <- function(input, output, session){
   mean_tab <- shiny::reactiveValues(x = data.frame(Mean = NA))
   vcov_tab <- shiny::reactiveValues(x = data.frame(Vcov = NA))
   #parameter list
-  param_list <- shiny::reactiveValues(residual = list(vcov = 1), intercept = 0)
-  
+  param_list <- shiny::reactiveValues(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))
+  # list containing components, equation and  code for output
+  output_list <- shiny::reactiveValues(x = make_equation(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))))  
+
+  # print(reactiveValuesToList(param_list))
+
   #update inputgroup with column headers(wrap in observe event after)
   shiny::observeEvent(input$input_structure, {
   
@@ -33,21 +37,21 @@ server <- function(input, output, session){
     
     observe({
       num_rows <- input$input_variable_no
-      new_rows <- rep("NA", num_rows)
+      new_rows <- rep("", num_rows)
       update_df <- data.frame(Name = new_rows)
       name_tab$x <- update_df
     })
     
     observe({
       num_rows <- input$input_variable_no
-      new_rows <- rep("NA", num_rows)
+      new_rows <- rep(1, num_rows)
       update_df <- data.frame(Beta = new_rows)
       beta_tab$x <- update_df
     })
     
     observe({
       num_rows <- input$input_variable_no
-      new_rows <- rep("NA", num_rows)
+      new_rows <- rep(0, num_rows)
       update_df <- data.frame(Mean = new_rows)
       mean_tab$x <- update_df
     })
@@ -56,7 +60,7 @@ server <- function(input, output, session){
     observe({
       num_rows <- input$input_variable_no
       num_cols <- input$input_variable_no
-      update_df <- data.frame(matrix(0, ncol = num_cols, nrow = num_rows))
+      update_df <- data.frame(diag(num_cols))
       colnames(update_df) <- 1:num_rows
       vcov_tab$x <- update_df
     })
@@ -162,17 +166,31 @@ server <- function(input, output, session){
   #add button adds to list
   shiny::observeEvent(input$add_to_parameters, {
 
+    # work out group name
     if(nchar(input$input_component_name) == 0){
       name_list$x <- input$input_group
     } else (name_list$x <- input$input_component_name)
+
+    #make squidSim parameter list 
+    param_list[[name_list$x]] <- list(
+      group = input$input_group,
+      beta = as.numeric(as.matrix(beta_tab$x)),
+      mean = as.numeric(as.matrix(mean_tab$x)),
+      vcov = as.matrix(vcov_tab$x)
+    )
     
-    param_list[[name_list$x]] <- list(group = input$input_group,
-                                      name = name_tab$x,
-                                      beta = beta_tab$x,
-                                      mean = mean_tab$x,
-                                      vcov = vcov_tab$x)
-    
-    print(param_list[[name_list$x]])
+    ## add in names if they are entered
+    param_list[[name_list$x]]$names <- 
+      if(!all(nchar(as.matrix(name_tab$x))==0)) {
+        as.character(as.matrix(name_tab$x))
+      }else{
+        paste0(name_list$x,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
+      }
+    print(as.list(param_list))
+    ## update equation
+    output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
+
+    print (gsub(" ", "&ensp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
    })
 
   
@@ -217,29 +235,34 @@ server <- function(input, output, session){
   
   
   output$output_equation <- renderUI({
-    
-    shiny::withMathJax("$$\\color{#000000}{\\beta_0} + \\color{#009E73}{w_{j}} + \\color{#F0E442}{\\beta_{v} v_{j}} + \\color{#56B4E9}{\\beta_{x,1} x_{1,i}} + \\color{#56B4E9}{\\beta_{x,2} x_{2,i}} + \\color{#E69F00}{\\epsilon_i}$$")
+    shiny::withMathJax(paste("$$",output_list$x$equation,"$$"))
+    # shiny::withMathJax("$$\\color{#000000}{\\beta_0} + \\color{#009E73}{w_{j}} + \\color{#F0E442}{\\beta_{v} v_{j}} + \\color{#56B4E9}{\\beta_{x,1} x_{1,i}} + \\color{#56B4E9}{\\beta_{x,2} x_{2,i}} + \\color{#E69F00}{\\epsilon_i}$$")
     
   })
   
   output$output_component <- renderText({
-    paste(
-      "<span style=\"color:#000000\">intercept</span>",
-      "<span style=\"color:#009E73\">individual_random</span>",
-      "<span style=\"color:#F0E442\">individual_predictors</span>",
-      "<span style=\"color:#56B4E9\">observation</span>",
-      "<span style=\"color:#E69F00\">residual</span>",
-      sep=" + ")
+    output_list$x$component
+    # paste(
+    #   "<span style=\"color:#000000\">intercept</span>",
+    #   "<span style=\"color:#009E73\">individual_random</span>",
+    #   "<span style=\"color:#F0E442\">individual_predictors</span>",
+    #   "<span style=\"color:#56B4E9\">observation</span>",
+    #   "<span style=\"color:#E69F00\">residual</span>",
+    #   sep=" + ")
   })
 
-  output$output_code <- renderText({
-    paste(
-      "<span style=\"color:#000000\">intercept</span>",
-      "<span style=\"color:#009E73\">individual_random</span>",
-      "<span style=\"color:#F0E442\">individual_predictors</span>",
-      "<span style=\"color:#56B4E9\">observation</span>",
-      "<span style=\"color:#E69F00\">residual</span>",
-      sep=" + ")
+  # output$output_code <- renderText({
+  #   output_list$x$code
+  #   # paste(
+  #   #   "<span style=\"color:#000000\">intercept</span>",
+  #   #   "<span style=\"color:#009E73\">individual_random</span>",
+  #   #   "<span style=\"color:#F0E442\">individual_predictors</span>",
+  #   #   "<span style=\"color:#56B4E9\">observation</span>",
+  #   #   "<span style=\"color:#E69F00\">residual</span>",
+  #   #   sep=" + ")
+  # })
+      output$output_code <- renderUI({
+    HTML(gsub("  ", "&emsp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+
   })
-    
 }
