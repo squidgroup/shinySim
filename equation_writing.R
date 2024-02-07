@@ -7,32 +7,29 @@
 # parameters <- dd$parameters
 
 # dd<-simulate_population(
-# 		data_structure = make_structure("individual(100)",rep=3),
-# 		parameters = 
-
-
-
-# 		list(
-# 			intercept = 0,
-# 			individual = list(
-# 				vcov=1
-# 			),
-# 			blah = list(
-# 				beta=0.2,group = "individual"
-# 			),
-# 			observation = list(
-# 				names=c("temp","rain"),
-# 				beta=c(2,-1)
-# 			),
-# 			interactions = list(
-# 				names = ("temp:rain")
-# 			),
-# 			residual=list(
-# 				vcov=1
-# 			)
+# 	data_structure = make_structure("individual(100)",rep=3),
+# 	parameters = 
+# 	list(
+# 		intercept = 0,
+# 		individual = list(
+# 			vcov=1
+# 		),
+# 		blah = list(
+# 			beta=0.2,group = "individual"
+# 		),
+# 		observation = list(
+# 			names=c("temp","rain"),
+# 			beta=c(2,-1)
+# 		),
+# 		interactions = list(
+# 			names = ("temp:rain"),
+# 			beta = 0.5
+# 		),
+# 		residual=list(
+# 			vcov=1
 # 		)
-
 # 	)
+# )
 # parameters <- dd$parameters
 
 
@@ -40,43 +37,26 @@
 make_equation<-function(parameters, print_colours=TRUE){
 
 	components <- names(parameters)
-
-	# reserved_names <- c("intercept","observation","interactions","residual")
-
-
-
-	# all_names <- sapply(params[-1], function(x) x$names)
-	# names(params)
-
-	# # params[components[! components %in% c("intercept","interactions","residual")]]
-
-	# fix_beta <- sapply(params[components[! components %in% c("intercept","interactions","residual")]
-	# ], function(x){
-	# 	if(all(x$beta%in%c(0,1))){ FALSE }else{ TRUE}
-	# })
-	# predictor <- names(fix_beta)[fix_beta]
-	# random <- names(fix_beta)[!fix_beta]
-
-	## collapse_predictor option would make them all x
+	
+	## reorder names
+	components <- 	c("intercept",components[! components %in% c("intercept","interactions","residual")],if("interactions" %in% components){"interactions"},"residual")
 
 
 	### make a colour for each component
 	colors <- rep(NA,length(components))
 	names(colors) <- components
-	colors["intercept"] <- palette.colors()[1]
-	colors["residual"] <- palette.colors()[2]
+	colors[c("intercept","residual")] <- palette.colors()[1:2]
 	# colors["observation"] <- palette.colors()[3]
 	colors[!names(colors) %in% c("intercept","residual") ] <- 
 	palette.colors()[4:(3+sum(!names(colors)%in% c("intercept","residual") ))]
 
 
+	## give each component in the parameter list a component name and color
 	params<-lapply(components,function(x)c(parameters[[x]], component=x, color=as.character(colors[x])))
 	names(params)<-components
 
 
-
 	### make a letter for each component
-
 	added_comp <- components[! components %in% c("intercept","interactions")]
 	base_levels <- c("observation","residual")
 
@@ -87,7 +67,6 @@ make_equation<-function(parameters, print_colours=TRUE){
 	all_letters[!names(all_letters)%in% base_levels ] <- 
 	letters[23:(24-sum(!names(all_letters)%in% base_levels ))]
 	
-
 
 	## assign subscripts to different groups
 	hlevels <-unique(sapply(params[added_comp], function(x) x$group ))
@@ -114,25 +93,72 @@ make_equation<-function(parameters, print_colours=TRUE){
 	)),make.row.names = FALSE))# 
 
 
-	all$beta_display <- ifelse(all$predictor,paste0("\\beta_{",all$letter,ifelse(all$display_n,paste0(",",all$variable_n),""),"} "),"")
+	all$beta_display <- ifelse(all$predictor,
+		paste0(
+			if(print_colours){paste0("\\color{",all$color,"}{")},
+			"\\beta_{",all$letter,
+			ifelse(all$display_n,paste0(",",all$variable_n),"")
+			,"} ",
+			if(print_colours){"}"}
+		),
+	"")
 
-	all$variable_display <- ifelse(all$display,paste0(all$letter,"_{",ifelse(all$display_n,paste0(all$variable_n,","),""),all$subscript,"}"),"")
+	all$variable_display <- ifelse(all$display,
+		paste0(
+			if(print_colours){paste0("\\color{",all$color,"}{")},
+			all$letter,"_{",
+			ifelse(all$display_n,paste0(all$variable_n,","),""),
+			all$subscript,"}",
+			if(print_colours){"}"}
+		),
+	"")
 
 
-	if(print_colours){
-		list(
-			equation = paste(
-				c(paste0("\\color{",palette.colors()[1],"}{\\beta_0}"),
-					paste0(ifelse(all$display,paste0("\\color{",all$color,"}{"),""),all$beta_display,all$variable_display,ifelse(all$display,"}",""))
-					# ,paste0("\\color{",palette.colors()[2],"}{\\epsilon_i}")
-					),
-				collapse=" + "),
+	## make interaction terms
+	if("interactions" %in% components){
+		int_names <- parameters[["interactions"]]$names
+		int_betas <- parameters[["interactions"]]$beta
+		# int_names <- c("temp:rain","temp:blah_effect")
+	 # x<-strsplit(parameters[["interactions"]]$names,":")[[1]]
+		## get the variables from the interactions, find varialbes and add a beta
+		int_beta_print <- ifelse(int_betas!=1,paste0(
+					if(print_colours){paste0("\\color{",colors["interactions"],"}{")},
+					"\\beta_{z",
+					if(length(int_names)>1){paste0("_",1:length(int_names))},"}",
+					if(print_colours){"}"}
+				),"")
 
-			components = paste(paste0(
-				"<span style=\"color:",colors ,"\">",components,"</span>"),
-				collapse=" + "),
+		int_print <- paste(int_beta_print,sapply(strsplit(int_names,":"), function(x) paste(all$variable_display[all$names %in% x],collapse=" ")))
 
-			code = paste0(
+	# match with variable display
+	# beta z - z not being used for anything else
+	}
+
+	part_print <- paste0(all$beta_display,all$variable_display)
+
+	## make latex equation
+	print_equation <- 
+			paste(
+				c("\\beta_0",
+					part_print[which(all$component!="residual")],
+				  if("interactions" %in% components){int_print},
+				  part_print[which(all$component=="residual")]),
+				collapse=" + ")
+	# paste(
+	# 			c(paste0("\\color{",palette.colors()[1],"}{\\beta_0}"),
+	# 				paste0(ifelse(all$display,paste0("\\color{",all$color,"}{"),""),all$beta_display,all$variable_display,ifelse(all$display,"}",""))
+	# 				),
+	# 			collapse=" + ")
+	
+	## make components string
+	print_components <- paste(paste0(
+		if(print_colours){paste0("<span style=\"color:",colors ,"\">")},
+		components,
+		if(print_colours){"</span>"}),
+		collapse=" + ")
+
+	## make code to print
+	print_code <- paste0(
 				paste0("parameters = list(\n", 
 				"  intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),\n"),
 				paste0(sapply(params[added_comp], function(x) { 
@@ -153,53 +179,28 @@ make_equation<-function(parameters, print_colours=TRUE){
 				})
 				,collapse=", \n")
 			, "\n)", collapse="")
-		)
-	}else{
-		list(
-			equation = paste(
-				c("\\beta_0",
-					paste0(all$beta_display,all$variable_display)),
-				collapse=" + "),
 	
-			components = paste(
-				components,
-				collapse=" + "),
 
-			code = paste0(
-				paste0("parameters = list(\n", 
-				"  intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),\n"),
-				paste0(sapply(params[added_comp], function(x) { 
-					paste0("  ",x$component, " = list(\n",
-						
-						paste0(c(	
-							if(x$component !=	x$group) paste0("    group = \"",x$group,"\""),
-							if(all(x$beta!=1)) paste0("    beta = c(",paste0(x$beta,collapse=","),")"),
-							if(all(x$mean!=0)) paste0("    mean = c(",paste0(x$mean,collapse=","),")"),
-							if(x$group=="residual"|(!all(diag(x$vcov)==1) & !all(x$vcov[lower.tri(x$vcov)]==0))){ 
-								if(ncol(x$vcov)==1 | all(x$vcov[lower.tri(x$vcov)]==0)){
-									paste0("    vcov = c(",paste0(diag(x$vcov),collapse=","),")")
-								}else{
-									paste0("    vcov = matrix( c(",paste0(x$vcov,collapse=","),"), nrow = ",ncol(x$vcov),", ncol = ",ncol(x$vcov), ")")
-								}
-						}),collapse=", \n"),
-						"\n  )", collapse="")
-				})
-				,collapse=", \n")
-			, "\n)", collapse="")
+	list(
+		equation = print_equation,
+		components = print_components,
+		code = print_code
+	)
 
-		)
-	}
 }
 
-
-
 ## TODO
-## add in interactions. colour - beta interaction colour, and other terms their respective colours
-## re-order so residual is at the end
+## vcov is not getting displayed in the code
+## interactions need displaying in the code
 ## compress predictors
+	## collapse_predictor option would make them all x
 
 # x<-list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))
 # make_equation(x)
 #  make_equation(dd$parameters, print_colours=FALSE)
 # # https://stackoverflow.com/questions/71616552/how-do-i-dynamically-change-label-text-color-of-r-shiny-radiobuttons-widget-when
 
+
+## ideas
+## when observation is used in the drop down, then remove it
+## shiny::runApp("/Users/joelpick/github/shinySim")
