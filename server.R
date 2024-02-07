@@ -69,20 +69,24 @@ server <- function(input, output, session){
         DT::datatable(
           name_tab$x,
           selection = 'none',
+          rownames = FALSE,
+          colnames = "Name",
           editable = list(target = "cell"),
           class = 'cell-border stripe',
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-        )
+        ) |> DT::formatStyle(1,`text-align` = 'center')
       )
 
       output$mean_table <- DT::renderDT(
         DT::datatable(
           mean_tab$x,
+          rownames = FALSE,
+          colnames = "Mean",
           editable = list(target = "cell"),
           selection = 'none',
           class = 'cell-border stripe',
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-        )
+        ) |> DT::formatStyle(`text-align` = 'center')
       )
       
 
@@ -91,19 +95,23 @@ server <- function(input, output, session){
           beta_tab$x,
           editable = list(target = "cell"),
           selection = 'none',
+          rownames = FALSE,
+          colnames = "Beta",
           class = 'cell-border stripe',
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-        )
+        ) |> DT::formatStyle(`text-align` = 'center')
       )
 
       output$vcov_table <- DT::renderDT(
         DT::datatable(
           vcov_tab$x,
           selection = 'none',
+          rownames = FALSE,
+          colnames = "VCov",
           editable = list(target = "cell"),
           class = 'cell-border stripe',
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
-        )
+        ) |> DT::formatStyle(`text-align` = 'center')
       )
 
   })
@@ -118,7 +126,7 @@ server <- function(input, output, session){
   shiny::observeEvent(input$name_table_cell_edit, {
     info <- input$name_table_cell_edit
     i <- info$row
-    j <- info$col
+    j <- info$col+1
     v <- info$value
     
     name_tab$x[i, j] <<- DT::coerceValue(v, name_tab$x[i, j])
@@ -131,7 +139,7 @@ server <- function(input, output, session){
   shiny::observeEvent(input$vcov_table_cell_edit, {
     info <- input$vcov_table_cell_edit
     i <- info$row
-    j <- info$col
+    j <- info$col+1
     v <- info$value
     
     vcov_tab$x[i, j] <<- DT::coerceValue(v, vcov_tab$x[i, j])
@@ -143,7 +151,7 @@ server <- function(input, output, session){
   shiny::observeEvent(input$beta_table_cell_edit, {
     info <- input$beta_table_cell_edit
     i <- info$row
-    j <- info$col
+    j <- info$col+1
     v <- info$value
     
     beta_tab$x[i, j] <<- DT::coerceValue(v, beta_tab$x[i, j])
@@ -155,7 +163,7 @@ server <- function(input, output, session){
   shiny::observeEvent(input$mean_table_cell_edit, {
     info <- input$mean_table_cell_edit
     i <- info$row
-    j <- info$col
+    j <- info$col+1
     v <- info$value
     
     mean_tab$x[i, j] <<- DT::coerceValue(v, mean_tab$x[i, j])
@@ -165,7 +173,12 @@ server <- function(input, output, session){
 
   #add button adds to list
   shiny::observeEvent(input$add_to_parameters, {
-
+    
+    if(input$input_group == ""){
+    shinyalert::shinyalert(title = "Please select a group", type = "error")
+    }
+    
+    if(input$input_group != ""){
     # work out group name
     if(nchar(input$input_component_name) == 0){
       name_list$x <- input$input_group
@@ -191,6 +204,7 @@ server <- function(input, output, session){
     output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
 
     print (gsub(" ", "&ensp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+    }
    })
 
   

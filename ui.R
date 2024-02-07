@@ -35,7 +35,7 @@ ui <- function() {
         #pickerinput
         shinyWidgets::pickerInput(
           inputId = "input_group",
-          label = NULL,
+          label = shiny::tags$span(style = "color: black;", "Select a group"),
           selected = NULL,
           choices = c("observation", "interactions", "c"),
           options = list(
@@ -140,23 +140,32 @@ ui <- function() {
       shiny::fluidRow(
         ##component output
         shinydashboard::box(
-          width = 12, status = "primary", solidHeader = TRUE,
+          width = 8, status = "primary", solidHeader = TRUE,
           title = "Simulation Components",
           shiny::uiOutput("output_component")
         ),
         ##equation output
         shinydashboard::box(
-          width = 12, status = "primary", solidHeader = TRUE,
+          width = 8, status = "primary", solidHeader = TRUE,
           title = "Simulation Equation",
           shiny::uiOutput("output_equation")
         ),
         ##code output
         shinydashboard::box(
-          width = 12, status = "primary", solidHeader = TRUE,
+          status = "primary", 
+          solidHeader = TRUE,
+          width = 8,
           title = "Simulation Code",
           shiny::uiOutput("output_code")
+        ),
+        #variance output
+        shinydashboard::box(
+          width = 4,
+          status = "primary", solidHeader = TRUE,
+          title = "Variance",
+          shiny::uiOutput("output_variance")
+        )
         )
       )
     )
-  )
 }
