@@ -138,15 +138,16 @@ ui <- function() {
     #dashbaord main
     body = shinydashboard::dashboardBody(
       shiny::fluidRow(
+        column(width = 8,
         ##component output
         shinydashboard::box(
-          width = 8, status = "primary", solidHeader = TRUE,
+          width = NULL, status = "primary", solidHeader = TRUE,
           title = "Simulation Components",
           shiny::uiOutput("output_component")
         ),
         ##equation output
         shinydashboard::box(
-          width = 8, status = "primary", solidHeader = TRUE,
+          width = NULL, status = "primary", solidHeader = TRUE,
           title = "Simulation Equation",
           shiny::uiOutput("output_equation")
         ),
@@ -154,16 +155,19 @@ ui <- function() {
         shinydashboard::box(
           status = "primary", 
           solidHeader = TRUE,
-          width = 8,
+          width = NULL,
           title = "Simulation Code",
           shiny::uiOutput("output_code")
+        )
         ),
+        column(width = 4,
         #variance output
         shinydashboard::box(
-          width = 4,
+          width = NULL,
           status = "primary", solidHeader = TRUE,
           title = "Variance",
           shiny::uiOutput("output_variance")
+        )
         )
         )
       )
