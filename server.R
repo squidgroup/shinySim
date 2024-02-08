@@ -209,7 +209,7 @@ server <- function(input, output, session){
         vcov = as.matrix(vcov_tab$x)
       )
       
-      if(!input$input_group %in% c("observation","interactions")){
+      if(!input$input_group %in% c("interactions")){
           param_list[[name_list$x]]$fixed <- input$input_component == "fixed categorical"
           param_list[[name_list$x]]$covariate <- input$input_component == "covariate"
       }
