@@ -1,5 +1,5 @@
 # shinySim created by Ed Ivimey-Cook and Joel Pick. 26th January 2024
-test_struc<- data.frame(x = 1:5, y = rnorm(5,0,2))
+
 ui <- function() {
   shinydashboard::dashboardPage(
     #packages we need
@@ -13,11 +13,18 @@ ui <- function() {
     
     #sidebarcode
     sidebar = shinydashboard::dashboardSidebar(
-      width = 350,
+      width = 300,
+      shiny::br(),
+      
+      ##input sturcture box
+      shinydashboard::box(
+        width = 12,
+        status = "primary",
+        solidHeader = TRUE,
+        title = "Data Structure",
         #textinput
-        datamods::import_globalenv_ui("myid",
-                                      packages = NULL,
-                                      title = NULL),
+        shiny::textInput("input_structure", label = NULL)
+      ),
       
       ##input component box
       shinydashboard::box(

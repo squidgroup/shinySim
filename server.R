@@ -122,9 +122,7 @@ server <- function(input, output, session){
   proxy_mean <- DT::dataTableProxy("mean_table")
   
   #need this to import from global env.
-  imported <- datamods::import_globalenv_server("myid",
-                                                btn_show_data = FALSE,
-                                                show_data_in = "modal")
+  imported <- datamods::import_globalenv_server("input_structure")
   #record the data edit
   shiny::observeEvent(input$name_table_cell_edit, {
     info <- input$name_table_cell_edit
