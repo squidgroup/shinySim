@@ -10,10 +10,17 @@ server <- function(input, output, session){
   beta_tab <- shiny::reactiveValues(x = data.frame(Beta = NA))
   mean_tab <- shiny::reactiveValues(x = data.frame(Mean = NA))
   vcov_tab <- shiny::reactiveValues(x = data.frame(Vcov = NA))
+  
+  residual_start = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)
+
   #parameter list
-  param_list <- shiny::reactiveValues(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))
+  param_list <- shiny::reactiveValues(intercept = 0,residual=residual_start)
   # list containing components, equation and  code for output
-  output_list <- shiny::reactiveValues(x = make_equation(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))))  
+  output_list <- shiny::reactiveValues(
+    x = make_equation(list(intercept = 0,residual = residual_start)),
+    var = simulated_variance(list(intercept = 0,residual = residual_start),data.struc)
+    )  
+
 
   # print(reactiveValuesToList(param_list))
   
@@ -202,6 +209,11 @@ server <- function(input, output, session){
         vcov = as.matrix(vcov_tab$x)
       )
       
+      if(!input$input_group %in% c("observation","interactions")){
+          param_list[[name_list$x]]$fixed <- input$input_component == "fixed categorical"
+          param_list[[name_list$x]]$covariate <- input$input_component == "covariate"
+      }
+
       ## add in names if they are entered
       param_list[[name_list$x]]$names <- 
         if(!all(nchar(as.matrix(name_tab$x))==0)) {
@@ -209,11 +221,14 @@ server <- function(input, output, session){
         }else{
           paste0(name_list$x,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
         }
-      print(as.list(param_list))
+      # print(reactiveValuesToList(param_list))
+      
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
-      #
-      print (gsub(" ", "&ensp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+      print(output_list$var)
+      # output_list$var <- simulated_variance(reactiveValuesToList(param_list),data.struc)
+      # print(output_list$var)
+      
     }
   })
   
@@ -259,33 +274,27 @@ server <- function(input, output, session){
   
   output$output_equation <- renderUI({
     shiny::withMathJax(paste("$$",output_list$x$equation,"$$"))
-     shiny::withMathJax("$$\\color{#000000}{\\beta_0} + \\color{#009E73}{w_{j}} + \\color{#F0E442}{\\beta_{v} v_{j}} + \\color{#56B4E9}{\\beta_{x,1} x_{1,i}} + \\color{#56B4E9}{\\beta_{x,2} x_{2,i}} + \\color{#E69F00}{\\epsilon_i}$$")
-    
   })
   
   output$output_component <- renderText({
     output_list$x$component
-     paste(
-       "<span style=\"color:#000000\">intercept</span>",
-       "<span style=\"color:#009E73\">individual_random</span>",
-       "<span style=\"color:#F0E442\">individual_predictors</span>",
-       "<span style=\"color:#56B4E9\">observation</span>",
-      "<span style=\"color:#E69F00\">residual</span>",
-       sep=" + ")
   })
 
-   output$output_code <- renderText({
-     output_list$x$code
-     # paste(
-     #   "<span style=\"color:#000000\">intercept</span>",
-     #   "<span style=\"color:#009E73\">individual_random</span>",
-     #   "<span style=\"color:#F0E442\">individual_predictors</span>",
-     #   "<span style=\"color:#56B4E9\">observation</span>",
-     #   "<span style=\"color:#E69F00\">residual</span>",
-     #   sep=" + ")
-   })
-      output$output_code <- renderUI({
-  HTML(gsub("  ", "&emsp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+  output$output_code <- renderUI({
+    HTML(gsub("  ", "&emsp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+  })
 
- })
+  output$output_variance<- renderText({
+  paste(
+    "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
+    "Simulated Mean:",output_list$var$total["mean"],"<br/>",
+    "Simulated Variance:",output_list$var$total["var"],"<br/><br/>",
+    "Contribution of different hierarchical levels to grand mean and variance:<br/>",
+    paste(rownames(output_list$var$groups[-1,]),output_list$var$groups[-1,"var"],sep=": ", collapse="<br/>"),
+    "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
+    paste(rownames(output_list$var$variables[-1,]),output_list$var$variables[-1,"var"],sep=": ", collapse="<br/>")
+
+  )
+  
+  })
 }

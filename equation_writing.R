@@ -168,18 +168,18 @@ make_equation<-function(parameters, print_colours=TRUE){
 # x<-params[["interactions"]]
 
 write_code_part <- function(x, print_colours) { 
-# if(x$component=="interactions"|| x$covariate || x$fixed){
-# 	show_beta <- show_names <- TRUE
-# 	show_group <- show_mean <- show_vcv <- FALSE
-# }else{
+if(x$component=="interactions"|| x$covariate || x$fixed){
+	show_beta <- show_names <- TRUE
+	show_group <- show_mean <- show_vcv <- FALSE
+}else{
 	show_group <- x$component !=	x$group
-	show_names <- !all(grepl(paste0(x$component,"_effect"),x$names))
+	show_names <- !all(grepl("residual",x$group)) & !all(grepl(paste0(x$component,"_effect"),x$names))
 	show_beta <- all(x$beta!=1)
 	show_mean <- all(x$mean!=0)
 	random <- !show_beta & !show_mean
 	show_vcv <- x$group=="residual"|random|(!all(diag(x$vcov)==1) & !all(x$vcov[lower.tri(x$vcov)]==0))
 	show_vcv_mat <- !all(x$vcov[lower.tri(x$vcov)]==0)
-# }
+}
 
 paste0(
 	if(print_colours){paste0("<span style=\"color:",x$color,"\">")},
