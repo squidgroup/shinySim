@@ -12,7 +12,7 @@
 # 	list(
 # 		intercept = 0,
 # 		individual = list(
-# 			vcov=1
+# 			vcov=c(1,2)
 # 		),
 # 		blah = list(
 # 			beta=0.2,group = "individual"
@@ -92,7 +92,7 @@ make_equation<-function(parameters, print_colours=TRUE){
 		subscript = subscripts[x$group]
 	)),make.row.names = FALSE))# 
 
-
+	## add colors and subscripts to betas
 	all$beta_display <- ifelse(all$predictor,
 		paste0(
 			if(print_colours){paste0("\\color{",all$color,"}{")},
@@ -103,6 +103,7 @@ make_equation<-function(parameters, print_colours=TRUE){
 		),
 	"")
 
+	## add colours and subscripts to variables
 	all$variable_display <- ifelse(all$display,
 		paste0(
 			if(print_colours){paste0("\\color{",all$color,"}{")},
@@ -129,9 +130,6 @@ make_equation<-function(parameters, print_colours=TRUE){
 				),"")
 
 		int_print <- paste(int_beta_print,sapply(strsplit(int_names,":"), function(x) paste(all$variable_display[all$names %in% x],collapse=" ")))
-
-	# match with variable display
-	# beta z - z not being used for anything else
 	}
 
 	part_print <- paste0(all$beta_display,all$variable_display)
@@ -144,11 +142,6 @@ make_equation<-function(parameters, print_colours=TRUE){
 				  if("interactions" %in% components){int_print},
 				  part_print[which(all$component=="residual")]),
 				collapse=" + ")
-	# paste(
-	# 			c(paste0("\\color{",palette.colors()[1],"}{\\beta_0}"),
-	# 				paste0(ifelse(all$display,paste0("\\color{",all$color,"}{"),""),all$beta_display,all$variable_display,ifelse(all$display,"}",""))
-	# 				),
-	# 			collapse=" + ")
 	
 	## make components string
 	print_components <- paste(paste0(
@@ -161,23 +154,7 @@ make_equation<-function(parameters, print_colours=TRUE){
 	print_code <- paste0(
 				paste0("parameters = list(\n", 
 				"  intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),\n"),
-				paste0(sapply(params[added_comp], function(x) { 
-					paste0("<span style=\"color:",x$color,"\">  ",x$component, " = list(\n",
-						
-						paste0(c(	
-							if(x$component !=	x$group) paste0("    group = \"",x$group,"\""),
-							if(all(x$beta!=1)) paste0("    beta = c(",paste0(x$beta,collapse=","),")"),
-							if(all(x$mean!=0)) paste0("    mean = c(",paste0(x$mean,collapse=","),")"),
-							if(x$group=="residual"|(!all(diag(x$vcov)==1) & !all(x$vcov[lower.tri(x$vcov)]==0))){ 
-								if(ncol(x$vcov)==1 | all(x$vcov[lower.tri(x$vcov)]==0)){
-									paste0("    vcov = c(",paste0(diag(x$vcov),collapse=","),")")
-								}else{
-									paste0("    vcov = matrix( c(",paste0(x$vcov,collapse=","),"), nrow = ",ncol(x$vcov),", ncol = ",ncol(x$vcov), ")")
-								}
-						}),collapse=", \n"),
-						"\n  )</span>", collapse="")
-				})
-				,collapse=", \n")
+				paste0(sapply(params[components!="intercept"], write_code_part,print_colours=print_colours),collapse=", \n")
 			, "\n)", collapse="")
 	
 
@@ -189,10 +166,50 @@ make_equation<-function(parameters, print_colours=TRUE){
 
 }
 
+# x<-params[["interactions"]]
+
+write_code_part <- function(x, print_colours) { 
+if(x$component=="interactions"|| x$covariate || x$fixed){
+	show_beta <- show_names <- TRUE
+	show_group <- show_mean <- show_vcv <- FALSE
+}else{
+	show_group <- x$component !=	x$group
+	show_names <- !all(grepl(paste0(x$component,"_effect"),x$names))
+	show_beta <- all(x$beta!=1)
+	show_mean <- all(x$mean!=0)
+	random <- !show_beta & !show_mean
+	show_vcv <- x$group=="residual"|random|(!all(diag(x$vcov)==1) & !all(x$vcov[lower.tri(x$vcov)]==0))
+	show_vcv_mat <- !all(x$vcov[lower.tri(x$vcov)]==0)
+}
+
+paste0(
+	if(print_colours){paste0("<span style=\"color:",x$color,"\">")},
+	"  ", x$component, " = list(\n",	
+	paste0(c(	
+		if(show_group) paste0("    group = \"",x$group,"\""),
+		if(show_names) paste0("    names = c(\"",paste0(x$names,collapse="\",\""),"\")"),
+		if(show_beta) paste0("    beta = c(",paste0(x$beta,collapse=","),")"),
+		if(show_mean) paste0("    mean = c(",paste0(x$mean,collapse=","),")"),
+		if(show_vcv){ 
+			if(show_vcv_mat){
+				paste0("    vcov = matrix( c(",paste0(x$vcov,collapse=","),"), nrow = ",ncol(x$vcov),", ncol = ",ncol(x$vcov), ")")		
+			}else{
+				paste0("    vcov = c(",paste0(diag(x$vcov),collapse=","),")")
+			}
+		}
+	),collapse=", \n"),
+"\n  )",if(print_colours){"</span>"},collapse="")
+
+}
+
+
+
+cat(y)
+
+
 ## TODO
-## vcov is not getting displayed in the code
-## interactions need displaying in the code
-## compress predictors
+## equations for fixed factors
+## compress predictors in equation
 	## collapse_predictor option would make them all x
 
 # x<-list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))
@@ -202,5 +219,4 @@ make_equation<-function(parameters, print_colours=TRUE){
 
 
 ## ideas
-## when observation is used in the drop down, then remove it
 ## shiny::runApp("/Users/joelpick/github/shinySim")
