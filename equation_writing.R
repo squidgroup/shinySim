@@ -1,5 +1,5 @@
 # library(squidSim)
-
+test_struc<- data.frame(x = 1:5, y = rnorm(5,0,2))
 # dd <- simulate_population(n=20,
 # 	parameters=list(
 # 		residual=list(

@@ -86,7 +86,7 @@ server <- function(input, output, session){
           selection = 'none',
           class = 'cell-border stripe',
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-        ) |> DT::formatStyle(`text-align` = 'center')
+        ) |> DT::formatStyle(1,`text-align` = 'left')
       )
       
 
@@ -99,7 +99,7 @@ server <- function(input, output, session){
           colnames = "Beta",
           class = 'cell-border stripe',
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-        ) |> DT::formatStyle(`text-align` = 'center')
+        ) |> DT::formatStyle(1,`text-align` = 'left')
       )
 
       output$vcov_table <- DT::renderDT(
@@ -111,7 +111,7 @@ server <- function(input, output, session){
           editable = list(target = "cell"),
           class = 'cell-border stripe',
           options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
-        ) |> DT::formatStyle(`text-align` = 'center')
+        ) 
       )
 
   })
@@ -121,7 +121,10 @@ server <- function(input, output, session){
   proxy_beta <- DT::dataTableProxy("beta_table")
   proxy_mean <- DT::dataTableProxy("mean_table")
   
-  
+  #need this to import from global env.
+  imported <- datamods::import_globalenv_server("myid",
+                                                btn_show_data = FALSE,
+                                                show_data_in = "modal")
   #record the data edit
   shiny::observeEvent(input$name_table_cell_edit, {
     info <- input$name_table_cell_edit
@@ -201,9 +204,9 @@ server <- function(input, output, session){
       }
     print(as.list(param_list))
     ## update equation
-    output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
-
-    print (gsub(" ", "&ensp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+#    output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
+#
+ #   print (gsub(" ", "&ensp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
     }
    })
 
@@ -248,14 +251,14 @@ server <- function(input, output, session){
           })
   
   
-  output$output_equation <- renderUI({
-    shiny::withMathJax(paste("$$",output_list$x$equation,"$$"))
+  #output$output_equation <- renderUI({
+    #shiny::withMathJax(paste("$$",output_list$x$equation,"$$"))
     # shiny::withMathJax("$$\\color{#000000}{\\beta_0} + \\color{#009E73}{w_{j}} + \\color{#F0E442}{\\beta_{v} v_{j}} + \\color{#56B4E9}{\\beta_{x,1} x_{1,i}} + \\color{#56B4E9}{\\beta_{x,2} x_{2,i}} + \\color{#E69F00}{\\epsilon_i}$$")
     
-  })
+  #})
   
-  output$output_component <- renderText({
-    output_list$x$component
+  #output$output_component <- renderText({
+   # output_list$x$component
     # paste(
     #   "<span style=\"color:#000000\">intercept</span>",
     #   "<span style=\"color:#009E73\">individual_random</span>",
@@ -263,7 +266,7 @@ server <- function(input, output, session){
     #   "<span style=\"color:#56B4E9\">observation</span>",
     #   "<span style=\"color:#E69F00\">residual</span>",
     #   sep=" + ")
-  })
+ # })
 
   # output$output_code <- renderText({
   #   output_list$x$code
@@ -275,8 +278,8 @@ server <- function(input, output, session){
   #   #   "<span style=\"color:#E69F00\">residual</span>",
   #   #   sep=" + ")
   # })
-      output$output_code <- renderUI({
-    HTML(gsub("  ", "&emsp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+      #output$output_code <- renderUI({
+    #HTML(gsub("  ", "&emsp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
 
-  })
+ # })
 }
