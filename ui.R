@@ -17,14 +17,14 @@ ui <- function() {
       shiny::br(),
       
       ##input sturcture box
-      shinydashboard::box(
-        width = 12,
-        status = "primary",
-        solidHeader = TRUE,
-        title = "Data Structure",
+      #shinydashboard::box(
+       # width = 12,
+        #solidHeader = TRUE,
+        #status = "primary",
+        #title = "Data Structure",
         #textinput
-        shiny::textInput("input_structure", label = NULL)
-      ),
+        #shiny::textInput("input_structure", label = NULL)
+      #),
       
       ##input component box
       shinydashboard::box(

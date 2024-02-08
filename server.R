@@ -1,7 +1,8 @@
 # shinySim created by Ed Ivimey-Cook and Joel Pick. 26th January 2024
 
 server <- function(input, output, session){
-  
+ 
+ 
   #named_list
   name_list <- shiny::reactiveValues(x = NULL)
   #table data
@@ -15,16 +16,25 @@ server <- function(input, output, session){
   output_list <- shiny::reactiveValues(x = make_equation(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))))  
 
   # print(reactiveValuesToList(param_list))
-
-  #update inputgroup with column headers(wrap in observe event after)
-  shiny::observeEvent(input$input_structure, {
   
-    if(input$input_structure !=""){ 
-  shinyWidgets::updatePickerInput(
-    session = session,
-    inputId = "input_group",
-    choices = c(input$input_structure, "observation", "interactions")
-    )
+  #importing datas structure
+  shiny::observe({
+     if(nrow(data.struc) > 0 ){
+       name_list$x <- get(x = "data.struc", envir = globalenv())
+       print(colnames(name_list$x))
+    } else
+    name_list$x <- NULL
+  })
+  
+  #update inputgroup with column headers(wrap in observe event after)
+  shiny::observe({
+    
+    if(nrow(data.struc) > 0 ){ 
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "input_group",
+        choices = c(colnames(name_list$x), "observation", "interactions")
+      )
     } else(shinyWidgets::updatePickerInput(
       session = session,
       inputId = "input_group",
@@ -32,6 +42,8 @@ server <- function(input, output, session){
     ))
   })
   
+  
+
   #create tables based on input
   shiny::observeEvent(input$input_variable_no, {
     
@@ -121,9 +133,6 @@ server <- function(input, output, session){
   proxy_beta <- DT::dataTableProxy("beta_table")
   proxy_mean <- DT::dataTableProxy("mean_table")
   
-  #need this to import from global env.
-  imported <- datamods::import_globalenv_server("input_structure")
-  print(imported)
   #record the data edit
   shiny::observeEvent(input$name_table_cell_edit, {
     info <- input$name_table_cell_edit
@@ -133,7 +142,6 @@ server <- function(input, output, session){
     
     name_tab$x[i, j] <<- DT::coerceValue(v, name_tab$x[i, j])
     DT::replaceData(proxy_name, name_tab$x, resetPaging = FALSE)
-   str(name_tab$x)
    print(name_tab$x)
   })
   
@@ -172,43 +180,42 @@ server <- function(input, output, session){
     DT::replaceData(proxy_mean, mean_tab$x,resetPaging = FALSE)
     str(mean_tab$x)
   })
-
+  
   #add button adds to list
   shiny::observeEvent(input$add_to_parameters, {
     
     if(input$input_group == ""){
-    shinyalert::shinyalert(title = "Please select a group", type = "error")
+      shinyalert::shinyalert(title = "Please select a group", type = "error")
     }
     
     if(input$input_group != ""){
-    # work out group name
-    if(nchar(input$input_component_name) == 0){
-      name_list$x <- input$input_group
-    } else (name_list$x <- input$input_component_name)
-
-    #make squidSim parameter list 
-    param_list[[name_list$x]] <- list(
-      group = input$input_group,
-      beta = as.numeric(as.matrix(beta_tab$x)),
-      mean = as.numeric(as.matrix(mean_tab$x)),
-      vcov = as.matrix(vcov_tab$x)
-    )
-    
-    ## add in names if they are entered
-    param_list[[name_list$x]]$names <- 
-      if(!all(nchar(as.matrix(name_tab$x))==0)) {
-        as.character(as.matrix(name_tab$x))
-      }else{
-        paste0(name_list$x,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
-      }
-    print(as.list(param_list))
-    ## update equation
-   output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
-#
-   print (gsub(" ", "&ensp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
+      # work out group name
+      if(nchar(input$input_component_name) == 0){
+        name_list$x <- input$input_group
+      } else (name_list$x <- input$input_component_name)
+      
+      #make squidSim parameter list 
+      param_list[[name_list$x]] <- list(
+        group = input$input_group,
+        beta = as.numeric(as.matrix(beta_tab$x)),
+        mean = as.numeric(as.matrix(mean_tab$x)),
+        vcov = as.matrix(vcov_tab$x)
+      )
+      
+      ## add in names if they are entered
+      param_list[[name_list$x]]$names <- 
+        if(!all(nchar(as.matrix(name_tab$x))==0)) {
+          as.character(as.matrix(name_tab$x))
+        }else{
+          paste0(name_list$x,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
+        }
+      print(as.list(param_list))
+      ## update equation
+      output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
+      #
+      print (gsub(" ", "&ensp;", gsub(pattern = "\\n", replacement = "<br/>", output_list$x$code)))
     }
-   })
-
+  })
   
   #show or hide group name box if interaction/observation is not picked.
   shiny::observeEvent(input$input_group, {
