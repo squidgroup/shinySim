@@ -17,10 +17,11 @@ server <- function(input, output, session){
   param_list <- shiny::reactiveValues(intercept = 0,residual=residual_start)
   # list containing components, equation and  code for output
   output_list <- shiny::reactiveValues(
-    x = make_equation(list(intercept = 0,residual = residual_start)),
-    var = simulated_variance(list(intercept = 0,residual = residual_start),data.struc)
+    x = make_equation(list(intercept = 0,residual = residual_start))
     )  
-
+  var_list <- shiny::reactiveValues(
+    x = simulated_variance(list(intercept = 0,residual = residual_start),data.struc)
+    )
 
   # print(reactiveValuesToList(param_list))
   
@@ -204,9 +205,9 @@ server <- function(input, output, session){
       #make squidSim parameter list 
       param_list[[name_list$x]] <- list(
         group = input$input_group,
-        beta = as.numeric(as.matrix(beta_tab$x)),
+        beta = unname(as.matrix(beta_tab$x)),
         mean = as.numeric(as.matrix(mean_tab$x)),
-        vcov = as.matrix(vcov_tab$x)
+        vcov = unname(as.matrix(vcov_tab$x))
       )
       
       if(!input$input_group %in% c("interactions")){
@@ -225,8 +226,10 @@ server <- function(input, output, session){
       
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
-      print(output_list$var)
-      # output_list$var <- simulated_variance(reactiveValuesToList(param_list),data.struc)
+      # print(output_list$var)
+# print(simulated_variance(reactiveValuesToList(param_list),data.struc))
+      var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
+      
       # print(output_list$var)
       
     }
@@ -285,16 +288,17 @@ server <- function(input, output, session){
   })
 
   output$output_variance<- renderText({
-  paste(
-    "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
-    "Simulated Mean:",output_list$var$total["mean"],"<br/>",
-    "Simulated Variance:",output_list$var$total["var"],"<br/><br/>",
-    "Contribution of different hierarchical levels to grand mean and variance:<br/>",
-    paste(rownames(output_list$var$groups[-1,]),output_list$var$groups[-1,"var"],sep=": ", collapse="<br/>"),
-    "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
-    paste(rownames(output_list$var$variables[-1,]),output_list$var$variables[-1,"var"],sep=": ", collapse="<br/>")
+    var_list$x
+  # paste(
+  #   "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
+  #   "Simulated Mean:",var_list$x$total["mean"],"<br/>",
+  #   "Simulated Variance:",var_list$x$total["var"],"<br/><br/>",
+  #   "Contribution of different hierarchical levels to grand mean and variance:<br/>",
+  #   paste(rownames(var_list$x$groups[-1,]),var_list$x$groups[-1,"var"],sep=": ", collapse="<br/>"),
+  #   "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
+  #   paste(rownames(var_list$x$variables[-1,]),var_list$x$variables[-1,"var"],sep=": ", collapse="<br/>")
 
-  )
+  # )
   
   })
 }

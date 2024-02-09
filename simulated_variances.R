@@ -25,6 +25,7 @@ prod_means <- function(means,vcov){
 	}
 }
 
+#makes a big matrix out of list of vcov matrices
 make_big_matrix<-function(x){
 	all_names <- c(sapply(x, function(i) colnames(i) ), recursive=TRUE)
 	mat_index <- c(0,cumsum(sapply(x, function(i) nrow(i))))
@@ -103,6 +104,9 @@ simulated_variance <- function(parameters,data_structure){
 			names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- param[[i]]$names
 		}
 	}
+
+	print("done fixed")
+
 	covariate <- p_names[sapply(p_names, function(i) param[[i]]$covariate)]
 	if(length(covariate)>0){
 		for (i in covariate){
@@ -112,7 +116,7 @@ simulated_variance <- function(parameters,data_structure){
 			names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- param[[i]]$names
 		}
 	}
-
+print("done covariate")
 	# if(!is.null(known_predictors)){
 	# 	param$known_predictors <- list(
 	# 		mean = colMeans(known_predictors[["predictors"]]),
@@ -140,24 +144,29 @@ simulated_variance <- function(parameters,data_structure){
 				)
 		})
 
+
 		param[["interactions"]]$vcov <- diag(sapply(int_var,function(x)x$cov), nrow=length(int_names))
 		param[["interactions"]]$mean <- sapply(int_var,function(x)x$mean)
 		names(param[["interactions"]]$mean) <- colnames(param[["interactions"]]$vcov) <- rownames(param[["interactions"]]$vcov) <- int_names
 	}
-
-
+	print("done interactions")
 
 	means <- do.call(c,c(lapply(param, function(p) p$mean ), use.names=FALSE))
-	covs <- make_big_matrix(lapply(param, function(p) p$vcov ))
-	betas <- do.call(rbind,lapply(param, function(p) p$beta ))
+	print("done means")
 
-	total_var <- as.vector(t(betas) %*% covs %*% betas)
+print(lapply(param, function(p) p$vcov ))
+	covs <- make_big_matrix(lapply(param, function(p) p$vcov ))
+	print("done covs")
+
+	betas <- do.call(rbind,lapply(param, function(p) p$beta ))
+	print("done betas")
+
 		
 	out <- list( 
 		## total
 		total = c(
 			mean = intercept + sum(betas * means),
-			var = total_var
+			var = as.vector(t(betas) %*% covs %*% betas)
 		),
 		
 		##hierarchy
@@ -172,7 +181,18 @@ simulated_variance <- function(parameters,data_structure){
 		)
 	 	
 	)
-	
+	print("done summaries")
 	# class(out) <- "squid_var"
-	return(out)
+	# return(out)
+
+	  paste(
+    "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
+    "Simulated Mean:",out$total["mean"],"<br/>",
+    "Simulated Variance:",out$total["var"],"<br/><br/>",
+    "Contribution of different hierarchical levels to grand mean and variance:<br/>",
+    paste(rownames(out$groups[-1,]),out$groups[-1,"var"],sep=": ", collapse="<br/>"),
+    "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
+    paste(rownames(out$variables[-1,]),out$variables[-1,"var"],sep=": ", collapse="<br/>")
+
+  )
 }

@@ -25,9 +25,6 @@ shinySim <- function(data.struc = NULL){
 source("equation_writing.R")
 source("simulated_variances.R")
 
-data_test <- data.frame(HELLO = 1:5, Joel = rnorm(5,6,7))
-
-# parameters =   list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE))
-# simulated_variance(parameters,data_test)
+data_test <- make_structure("individual(10)",repeat_obs=2)
 
 shinySim(data.struc = data_test)
