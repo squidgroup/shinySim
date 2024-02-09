@@ -6,9 +6,11 @@ ui <- function() {
     shinyjs::useShinyjs(),
     
     #headercode
-    header = shinydashboard::dashboardHeader(
+    header = shinydashboardPlus::dashboardHeader(
       title = "shinySim",
-      shinydashboardPlus::userOutput("user")
+      titleWidth = 300,
+      shinydashboardPlus::userOutput("user"),
+      controlbarIcon = NULL
     ),
     
     #sidebarcode
@@ -75,11 +77,41 @@ ui <- function() {
         )
           )
         ),
+        
+        #code to remove numeric inputs
+        shiny::tags$head(
+          shiny::tags$style(shiny::HTML("
+      .dataTables_wrapper input[type='number']::-webkit-inner-spin-button,
+      .dataTables_wrapper input[type='number']::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    "
+    ))
+        ),
+    
         #tables#
-          DT::DTOutput("name_table"),
-          DT::DTOutput("mean_table"),
-          DT::DTOutput("beta_table"),
-          DT::DTOutput("vcov_table"),
+    shiny::wellPanel(style = "background: white",
+           h3("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
+              margin-top: 0;"),
+          DT::DTOutput("name_table")
+    ),
+    shiny::wellPanel(style = "background: white",
+          h3("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+              margin-top: 0;"),
+          DT::DTOutput("mean_table")
+    ),
+    shiny::wellPanel(style = "background: white",
+          h3("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+              margin-top: 0;"),
+          DT::DTOutput("beta_table")
+    ),
+    shiny::wellPanel(style = "background: white",
+          h3("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+              margin-top: 0;"),
+          DT::DTOutput("vcov_table")
+    ),
+
         #covcorr radio
           shinyWidgets::radioGroupButtons(
             inputId = "input_covcorr",
@@ -88,13 +120,22 @@ ui <- function() {
                         "Cov"),
             direction = "horizontal",
             individual = TRUE,
+            justified = TRUE,
             checkIcon = list(
               yes = tags$i(class = "fa fa-check-square", 
                            style = "color: steelblue"),
               no = tags$i(class = "fa fa-square-o", 
                           style = "color: steelblue"))
           ),
-        shiny::actionButton(inputId = "add_to_parameters", "Add")
+        br(),
+        shiny::tags$div(
+          style = "display: flex; justify-content: center;",
+          shiny::actionButton(
+          "add_to_parameters",
+          label = "Add",
+          style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+        )
+        )
       ),
 
       # depending on each component different things come up.
@@ -107,38 +148,39 @@ ui <- function() {
       # radio button with covariance or correlation.
 
     ##edit compment box
-      shinydashboard::box(
-        width = 12,
-        status = "primary",
-        solidHeader = TRUE,
-        title = "Edit Component",
+      #shinydashboard::box(
+       # width = 12,
+        #status = "primary",
+        #solidHeader = TRUE,
+        #title = "Edit Component",
         #pickerinput for component
-        shinyWidgets::pickerInput(
-          inputId = "edit_component",
-          label = NULL,
-          choices = c(
-            "predictor", "random", "fixed categorical",
-            "covariate"
-          ),
-          options = list(
-            title = "Choose component"
-          )
-        ),
+        #shinyWidgets::pickerInput(
+        #  inputId = "edit_component",
+         # label = NULL,
+          #choices = c(
+          #  "predictor", "random", "fixed categorical",
+           # "covariate"
+          #),
+          #options = list(
+          #  title = "Choose component"
+          #)
+        #),
         #pickerinput to select group
-        shinyWidgets::pickerInput(
-          inputId = "edit_group",
-          label = NULL,
-          choices = c("a", "b", "c", "d"),
-          options = list(
-            title = "Group"
-          )
-        ),
-      )
-    ),
+        #shinyWidgets::pickerInput(
+         # inputId = "edit_group",
+        #  label = NULL,
+         # choices = c("a", "b", "c", "d"),
+        #  options = list(
+         #   title = "Group"
+        #  )
+        #),
+      #)
+    #),
     #dashbaord main
     body = shinydashboard::dashboardBody(
+      shiny::br(),
       shiny::fluidRow(
-        column(width = 8,
+        shiny::column(width = 8,
         ##component output
         shinydashboard::box(
           width = NULL, status = "primary", solidHeader = TRUE,
@@ -160,7 +202,7 @@ ui <- function() {
           shiny::uiOutput("output_code")
         )
         ),
-        column(width = 4,
+        shiny::column(width = 4,
         #variance output
         shinydashboard::box(
           width = NULL,

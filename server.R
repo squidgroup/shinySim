@@ -1,8 +1,7 @@
 # shinySim created by Ed Ivimey-Cook and Joel Pick. 26th January 2024
 
 server <- function(input, output, session){
- 
- 
+
   #named_list
   name_list <- shiny::reactiveValues(x = NULL)
   #table data
@@ -85,27 +84,40 @@ server <- function(input, output, session){
       vcov_tab$x <- update_df
     })
     
+    js <- "table.on('click', 'td', function() { 
+    $(this).dblclick();
+  });"
+    
+    
       output$name_table <- DT::renderDT(
         DT::datatable(
           name_tab$x,
           selection = 'none',
           rownames = FALSE,
-          colnames = "Name",
+          colnames = NULL,
+          callback = DT::JS(js),
           editable = list(target = "cell"),
-          class = 'cell-border stripe',
-          options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-        ) |> DT::formatStyle(1,`text-align` = 'center')
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100,
+                         rowCallback = DT::JS(
+                           'function(row, data) {',
+                           '$("td", row).css("height", "20px");', # Set row height
+                           '}'
+                         )),
+        ) |> DT::formatStyle(1,`text-align` = 'left') |>
+          DT::formatStyle(names(name_tab$x), lineHeight = '30px')
       )
 
       output$mean_table <- DT::renderDT(
         DT::datatable(
           mean_tab$x,
           rownames = FALSE,
-          colnames = "Mean",
+          colnames = NULL,
+          callback = DT::JS(js),
           editable = list(target = "cell"),
           selection = 'none',
-          class = 'cell-border stripe',
-          options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
         ) |> DT::formatStyle(1,`text-align` = 'left')
       )
       
@@ -116,10 +128,11 @@ server <- function(input, output, session){
           editable = list(target = "cell"),
           selection = 'none',
           rownames = FALSE,
-          colnames = "Beta",
-          class = 'cell-border stripe',
-          options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-        ) |> DT::formatStyle(1,`text-align` = 'left')
+          colnames = NULL,
+          callback = DT::JS(js),
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
+          ) |> DT::formatStyle(1,`text-align` = 'left')
       )
 
       output$vcov_table <- DT::renderDT(
@@ -127,14 +140,16 @@ server <- function(input, output, session){
           vcov_tab$x,
           selection = 'none',
           rownames = FALSE,
-          colnames = "VCov",
+          colnames = NULL,
+          callback = DT::JS(js),
           editable = list(target = "cell"),
-          class = 'cell-border stripe',
-          options = list(scrollX = TRUE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
-        ) 
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
+        ) |> DT::formatStyle(1:nrow(vcov_tab$x),`text-align` = 'left')
       )
 
   })
+
   #create proxies to edit data
   proxy_vcov <- DT::dataTableProxy("vcov_table")
   proxy_name <- DT::dataTableProxy("name_table")

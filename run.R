@@ -25,6 +25,7 @@ shinySim <- function(data.struc = NULL){
 source("equation_writing.R")
 source("simulated_variances.R")
 
-data_test <- make_structure("individual(10)",repeat_obs=2)
+
+data_test <- squidSim::make_structure("individual(10)",repeat_obs=2)
 
 shinySim(data.struc = data_test)
