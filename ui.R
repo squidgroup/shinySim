@@ -19,22 +19,12 @@ ui <- function() {
       shiny::br(),
       
       ##input sturcture box
-      #shinydashboard::box(
-       # width = 12,
-        #solidHeader = TRUE,
-        #status = "primary",
-        #title = "Data Structure",
-        #textinput
-        #shiny::textInput("input_structure", label = NULL)
-      #),
-      
-      ##input component box
       shinydashboard::box(
-        width = 12,
-        status = "primary",
+       width = 12,
         solidHeader = TRUE,
+        status = "primary",
         title = "Add Component",
-        #pickerinput
+                
         shinyWidgets::pickerInput(
           inputId = "input_group",
           label = shiny::tags$span(style = "color: black;", "Select a group"),
@@ -46,20 +36,51 @@ ui <- function() {
         ),
         #hidden group name
         shinyjs::hidden(
-          shiny::div(
-            id = "component_name",
+          # shiny::div(
+            # id = "component_name",
             shiny::textInput("input_component_name",
                              value = "",
               label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
-            )
+            # )
           )
         ),
-        #variable number
-        shiny::numericInput(
-          inputId = "input_variable_no",
-          label = shiny::tags$span(style = "color: black;", "Number of Variables"),
-          value = 1, min = 1, max = 10
+        # br(),
+        shiny::tags$div(
+          style = "display: flex; justify-content: center;",
+          shiny::actionButton(
+          "add_component",
+          label = "Add",
+          style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+        ),      
+      ),
+      
+      ##update component box
+      shinydashboard::box(
+        width = 12,
+        status = "primary",
+        solidHeader = TRUE,
+        title = "Modify Component",
+        #pickerinput
+        shinyWidgets::pickerInput(
+          inputId = "choose_component",
+          label = shiny::tags$span(style = "color: black;", "Select Component"),
+          selected = NULL,
+          choices = c("intercept","residual"),
+          options = list(
+            title = "Component"
+          )
         ),
+        #hidden group name
+        # shinyjs::hidden(
+        #   shiny::div(
+        #     id = "component_name",
+        #     shiny::textInput("input_component_name",
+        #                      value = "",
+        #       label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
+        #     )
+        #   )
+        # ),
+        
         #hidden input component
         shinyjs::hidden(
           shiny::div(
@@ -77,6 +98,16 @@ ui <- function() {
         )
           )
         ),
+
+        #variable number
+        shinyjs::hidden(
+        # shiny::div(
+        shiny::numericInput(
+          inputId = "input_variable_no",
+          label = shiny::tags$span(style = "color: black;", "Number of Variables"),
+          value = 1, min = 1, max = 10
+        # )
+        )),
         
         #code to remove numeric inputs
         shiny::tags$head(
@@ -91,48 +122,61 @@ ui <- function() {
         ),
     
         #tables#
-    shiny::wellPanel(style = "background: white",
+                shinyjs::hidden(
+    shiny::wellPanel(style = "background: white",id="name_panel",
            h3("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
               margin-top: 0;"),
           DT::DTOutput("name_table")
-    ),
-    shiny::wellPanel(style = "background: white",
+    )),
+
+        shinyjs::hidden(
+    shiny::wellPanel(style = "background: white",id="mean_panel",
           h3("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
           DT::DTOutput("mean_table")
-    ),
-    shiny::wellPanel(style = "background: white",
-          h3("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
-              margin-top: 0;"),
-          DT::DTOutput("beta_table")
-    ),
-    shiny::wellPanel(style = "background: white",
+    )),
+
+        shinyjs::hidden(
+    shiny::wellPanel(style = "background: white",id="vcov_panel",
           h3("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
           DT::DTOutput("vcov_table")
-    ),
-
-        #covcorr radio
-          shinyWidgets::radioGroupButtons(
-            inputId = "input_covcorr",
-            label = NULL,
-            choices = c("Corr", 
-                        "Cov"),
-            direction = "horizontal",
-            individual = TRUE,
-            justified = TRUE,
-            checkIcon = list(
-              yes = tags$i(class = "fa fa-check-square", 
-                           style = "color: steelblue"),
-              no = tags$i(class = "fa fa-square-o", 
-                          style = "color: steelblue"))
-          ),
-        br(),
+    )),
+    
+            shinyjs::hidden(
+    shiny::wellPanel(style = "background: white",id="beta_panel",
+          h3("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+              margin-top: 0;"),
+          DT::DTOutput("beta_table")
+    )),
+    
+    shinyjs::hidden(
+        shiny::numericInput(
+          inputId = "intercept_panel",
+          label = shiny::tags$span(style = "color: black;", "Intercept"),
+          value = 0
+        )),
+            #covcorr radio
+        #   shinyWidgets::radioGroupButtons(
+        #     inputId = "input_covcorr",
+        #     label = NULL,
+        #     choices = c("Corr", 
+        #                 "Cov"),
+        #     direction = "horizontal",
+        #     individual = TRUE,
+        #     justified = TRUE,
+        #     checkIcon = list(
+        #       yes = tags$i(class = "fa fa-check-square", 
+        #                    style = "color: steelblue"),
+        #       no = tags$i(class = "fa fa-square-o", 
+        #                   style = "color: steelblue"))
+        #   ),
+        # br(),
         shiny::tags$div(
           style = "display: flex; justify-content: center;",
           shiny::actionButton(
-          "add_to_parameters",
-          label = "Add",
+          "update_parameters",
+          label = "Update",
           style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
         )
         )

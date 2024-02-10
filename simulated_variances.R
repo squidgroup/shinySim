@@ -105,7 +105,7 @@ simulated_variance <- function(parameters,data_structure){
 		}
 	}
 
-	print("done fixed")
+	# print("done fixed")
 
 	covariate <- p_names[sapply(p_names, function(i) param[[i]]$covariate)]
 	if(length(covariate)>0){
@@ -116,7 +116,7 @@ simulated_variance <- function(parameters,data_structure){
 			names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- param[[i]]$names
 		}
 	}
-print("done covariate")
+# print("done covariate")
 	# if(!is.null(known_predictors)){
 	# 	param$known_predictors <- list(
 	# 		mean = colMeans(known_predictors[["predictors"]]),
@@ -149,17 +149,16 @@ print("done covariate")
 		param[["interactions"]]$mean <- sapply(int_var,function(x)x$mean)
 		names(param[["interactions"]]$mean) <- colnames(param[["interactions"]]$vcov) <- rownames(param[["interactions"]]$vcov) <- int_names
 	}
-	print("done interactions")
+	# print("done interactions")
 
 	means <- do.call(c,c(lapply(param, function(p) p$mean ), use.names=FALSE))
-	print("done means")
+	# print("done means")
 
-print(lapply(param, function(p) p$vcov ))
 	covs <- make_big_matrix(lapply(param, function(p) p$vcov ))
-	print("done covs")
+	# print("done covs")
 
 	betas <- do.call(rbind,lapply(param, function(p) p$beta ))
-	print("done betas")
+	# print("done betas")
 
 		
 	out <- list( 
@@ -181,7 +180,7 @@ print(lapply(param, function(p) p$vcov ))
 		)
 	 	
 	)
-	print("done summaries")
+	# print("done summaries")
 	# class(out) <- "squid_var"
 	# return(out)
 

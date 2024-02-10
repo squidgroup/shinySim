@@ -2,6 +2,9 @@
 
 server <- function(input, output, session){
 
+  ## list of added components as well as interactions
+  component_list <- shiny::reactiveValues(
+    x = data.frame(component=c("intercept","residual"),group=c("intercept","residual")))
   #named_list
   name_list <- shiny::reactiveValues(x = NULL)
   #table data
@@ -28,7 +31,7 @@ server <- function(input, output, session){
   shiny::observe({
      if(nrow(data.struc) > 0 ){
        name_list$x <- get(x = "data.struc", envir = globalenv())
-       print(colnames(name_list$x))
+       # print(colnames(name_list$x))
     } else
     name_list$x <- NULL
   })
@@ -48,8 +51,173 @@ server <- function(input, output, session){
       choices = c("observation", "interactions")
     ))
   })
+
   
   
+
+#####
+# ---  ADDING IN COMPONENT
+####
+
+  #show or hide group name box if interaction/observation is not picked.
+  shiny::observeEvent(input$input_group, {
+    # print(input$input_group)
+    if(input$input_group %in% c("","observation","interactions")){
+      shinyjs::hide("input_component_name")
+     }else{
+      shinyjs::show("input_component_name")
+     }
+  })
+
+  ### what happens when add component button is pressed
+  shiny::observeEvent(input$add_component, {
+    
+    if(input$input_group == ""){
+      shinyalert::shinyalert(title = "Please select a group", type = "error")
+    }
+
+    comp_name <- if(nchar(input$input_component_name) == 0){
+        input$input_group
+      }else{
+         input$input_component_name
+      } 
+    
+    if(comp_name %in% component_list$x$component){
+      shinyalert::shinyalert(title = "Component already added", type = "error")
+    }else{
+     component_list$x<- data.frame(
+        component=c(component_list$x$component,comp_name),
+        group=c(component_list$x$group,input$input_group))
+
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "choose_component",
+        choices = component_list$x$component
+      )
+    }
+    # adds the component and group to the component list
+ 
+  })
+
+
+#####
+# ---  UPDATING COMPONENTS
+####
+
+  ### 
+  ###
+
+  shiny::observeEvent(input$choose_component, {
+
+
+    if(input$choose_component %in% c("","intercept","observation","interactions","residual")){
+      shinyjs::hide("component_type")
+    }else{
+      shinyjs::show("component_type")
+      shinyjs::hide("input_variable_no")
+      shinyjs::hide("beta_panel")
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("vcov_panel")
+      shinyjs::hide("name_panel")
+    }
+
+    if(input$choose_component %in% c("")){
+      shinyjs::hide("input_variable_no")
+      shinyjs::hide("beta_panel")
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("vcov_panel")
+      shinyjs::hide("name_panel")
+      shinyjs::hide("intercept_panel")
+    }
+
+    if(input$choose_component %in% c("intercept")){
+      shinyjs::hide("input_variable_no")
+      shinyjs::hide("beta_panel")
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("vcov_panel")
+      shinyjs::hide("name_panel")
+      shinyjs::show("intercept_panel")
+    }
+
+    if(input$choose_component == c("observation")){
+      shinyjs::show("input_variable_no")
+      shinyjs::show("name_panel")
+      shinyjs::show("mean_panel")
+      shinyjs::show("vcov_panel")
+      shinyjs::show("beta_panel")
+      shinyjs::hide("intercept_panel")
+    }
+    
+    if(input$choose_component == c("interactions")){
+      shinyjs::show("input_variable_no")
+      shinyjs::show("name_panel")
+      shinyjs::show("beta_panel")
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("vcov_panel")
+      shinyjs::hide("intercept_panel")
+    }
+    
+    if(input$choose_component == c("residual")){
+      shinyjs::show("vcov_panel")
+      shinyjs::show("beta_panel")
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("input_variable_no")
+      shinyjs::hide("name_panel")
+      shinyjs::hide("intercept_panel")
+    }
+  
+  })
+  
+  shiny::observeEvent(input$input_component, {
+  
+    if(input$input_component==c("predictor")){
+      shinyjs::show("input_variable_no")
+      shinyjs::show("name_panel")
+      shinyjs::show("mean_panel")
+      shinyjs::show("vcov_panel")
+      shinyjs::show("beta_panel")
+      shinyjs::hide("intercept_panel")
+    }
+  
+    if(input$input_component==c("random")){
+      shinyjs::show("input_variable_no")
+      shinyjs::show("vcov_panel")
+      shinyjs::show("beta_panel")
+      shinyjs::show("name_panel")
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("intercept_panel")
+    }
+
+    if(input$input_component==c("fixed categorical")){
+      # set number of 
+      # input$input_variable_no <-
+      shinyjs::hide("input_variable_no")
+      # fill in names from data.str
+      # shinyjs::show("name_panel")
+      shinyjs::hide("name_panel")
+      shinyjs::show("beta_panel")
+      shinyjs::hide("vcov_panel")     
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("intercept_panel")      
+    }
+  
+    if(input$input_component==c("covariate")){
+      shinyjs::show("name_panel")
+      shinyjs::show("beta_panel")
+      shinyjs::hide("vcov_panel")     
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("input_variable_no")
+      shinyjs::hide("intercept_panel")
+    }
+
+  })
+
+
+
+#################
+
+#table stuff
+
 
   #create tables based on input
   shiny::observeEvent(input$input_variable_no, {
@@ -165,7 +333,7 @@ server <- function(input, output, session){
     
     name_tab$x[i, j] <<- DT::coerceValue(v, name_tab$x[i, j])
     DT::replaceData(proxy_name, name_tab$x, resetPaging = FALSE)
-   print(name_tab$x)
+   # print(name_tab$x)
   })
   
   #record the data edit
@@ -204,73 +372,77 @@ server <- function(input, output, session){
     str(mean_tab$x)
   })
   
-  #add button adds to list
-  shiny::observeEvent(input$add_to_parameters, {
+
+
+####
+## Pressing update button
+####
+
+
+  #update button updates components
+  shiny::observeEvent(input$update_parameters, {
     
-    if(input$input_group == ""){
-      shinyalert::shinyalert(title = "Please select a group", type = "error")
-    }
-    
-    if(input$input_group != ""){
+    update_comp <- input$choose_component
+     
       # work out group name
-      if(nchar(input$input_component_name) == 0){
-        name_list$x <- input$input_group
-      } else (name_list$x <- input$input_component_name)
+    update_group <- component_list$x$group[component_list$x$component==update_comp]
+
+    if(input$choose_component == ""){
+      shinyalert::shinyalert(title = "Please select a component", type = "error")
+    } else if(input$choose_component == "intercept"){
+      param_list[["intercept"]] <- input$intercept_panel
+    }else{
       
       #make squidSim parameter list 
-      param_list[[name_list$x]] <- list(
-        group = input$input_group,
+      param_list[[update_comp]] <- list(
+        group = update_group,
         beta = unname(as.matrix(beta_tab$x)),
         mean = as.numeric(as.matrix(mean_tab$x)),
         vcov = unname(as.matrix(vcov_tab$x))
       )
       
-      if(!input$input_group %in% c("interactions")){
-          param_list[[name_list$x]]$fixed <- input$input_component == "fixed categorical"
-          param_list[[name_list$x]]$covariate <- input$input_component == "covariate"
+      if(update_group != "interactions"){
+          param_list[[update_comp]]$fixed <- input$input_component == "fixed categorical"
+          param_list[[update_comp]]$covariate <- input$input_component == "covariate"
       }
 
       ## add in names if they are entered
-      param_list[[name_list$x]]$names <- 
+      param_list[[update_comp]]$names <- 
         if(!all(nchar(as.matrix(name_tab$x))==0)) {
           as.character(as.matrix(name_tab$x))
         }else{
-          paste0(name_list$x,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
+          paste0(update_comp,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
         }
+    }
+
       # print(reactiveValuesToList(param_list))
       
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
-      # print(output_list$var)
-# print(simulated_variance(reactiveValuesToList(param_list),data.struc))
+
       var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
       
-      # print(output_list$var)
-      
-    }
-  })
-  
-  #show or hide group name box if interaction/observation is not picked.
-  shiny::observeEvent(input$input_group, {
-    if(input$input_group == "observation"|
-       input$input_group == "interactions"){
-      shinyjs::hide("component_name")
-    } 
-     else {
-      shinyjs::show("component_name")
-     }
-  })
-  
-  shiny::observeEvent(input$input_group, {
-    if(input$input_group == "observation"|
-       input$input_group == "interactions"){
       shinyjs::hide("component_type")
-    } 
-    else {
-      shinyjs::show("component_type")
-    }
+      shinyjs::hide("input_variable_no")
+      shinyjs::hide("name_panel")
+      shinyjs::hide("mean_panel")
+      shinyjs::hide("vcov_panel")
+      shinyjs::hide("beta_panel")
+      shinyjs::hide("intercept_panel")
+
+      # input$input_component<-""
+
   })
   
+
+
+
+
+
+##############
+
+
+
   #user name for popup
   output$user <- shinydashboardPlus::renderUser({
     shinydashboardPlus::dashboardUser(
