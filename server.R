@@ -76,12 +76,6 @@ server <- function(input, output, session){
       shinyalert::shinyalert(title = "Please select a group", type = "error")
     }
     
-    shinyWidgets::updatePickerInput(
-      session = session,
-      inputId = "input_group",
-      selected = ""
-    )
-
     comp_name <- if(nchar(input$input_component_name) == 0){
         input$input_group
       }else{
@@ -103,6 +97,12 @@ server <- function(input, output, session){
     }
     # adds the component and group to the component list
  
+    shinyWidgets::updatePickerInput(
+      session = session,
+      inputId = "input_group",
+      selected = ""
+    )
+    
   })
 
 
@@ -204,7 +204,14 @@ server <- function(input, output, session){
       shinyjs::show("beta_panel")
       shinyjs::hide("vcov_panel")     
       shinyjs::hide("mean_panel")
-      shinyjs::hide("intercept_panel")      
+      shinyjs::hide("intercept_panel")
+      
+      if(length(table(name_list$x))>1){
+        num_level<-length(table(name_list$x[input$choose_component]))
+        shiny::updateNumericInput(session = session, 
+                                  inputId = "input_variable_no", 
+                                  value = num_level)
+      }
     }
   
     if(input$input_component==c("covariate")){
@@ -217,9 +224,7 @@ server <- function(input, output, session){
     }
     
     
-
   })
-
 
 
 #################

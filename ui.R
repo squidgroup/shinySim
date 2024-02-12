@@ -29,7 +29,7 @@ ui <- function() {
           inputId = "input_group",
           label = shiny::tags$span(style = "color: black;", "Select a group"),
           selected = NULL,
-          choices = c("observation", "interactions", "c"),
+          choices = c("observation", "interactions"),
           options = list(
             title = "Group"
           )
