@@ -75,6 +75,12 @@ server <- function(input, output, session){
     if(input$input_group == ""){
       shinyalert::shinyalert(title = "Please select a group", type = "error")
     }
+    
+    shinyWidgets::updatePickerInput(
+      session = session,
+      inputId = "input_group",
+      selected = ""
+    )
 
     comp_name <- if(nchar(input$input_component_name) == 0){
         input$input_group
@@ -209,6 +215,8 @@ server <- function(input, output, session){
       shinyjs::hide("input_variable_no")
       shinyjs::hide("intercept_panel")
     }
+    
+    
 
   })
 
@@ -429,6 +437,12 @@ server <- function(input, output, session){
       shinyjs::hide("vcov_panel")
       shinyjs::hide("beta_panel")
       shinyjs::hide("intercept_panel")
+      
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "choose_component",
+        selected = ""
+      )
 
       # input$input_component<-""
 
