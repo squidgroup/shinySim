@@ -176,6 +176,10 @@ server <- function(input, output, session){
   
   shiny::observeEvent(input$input_component, {
   
+   shiny::updateNumericInput(session = session, 
+                                  inputId = "input_variable_no", 
+                                  value = 1)
+
     if(input$input_component==c("predictor")){
       shinyjs::show("input_variable_no")
       shinyjs::show("name_panel")
@@ -200,20 +204,21 @@ server <- function(input, output, session){
       shinyjs::hide("input_variable_no")
       # fill in names from data.str
       # shinyjs::show("name_panel")
-      shinyjs::hide("name_panel")
+      shinyjs::show("name_panel")
       shinyjs::show("beta_panel")
       shinyjs::hide("vcov_panel")     
       shinyjs::hide("mean_panel")
       shinyjs::hide("intercept_panel")
       
-      if(length(table(name_list$x))>1){
-        num_level<-length(table(name_list$x[input$choose_component]))
+      num_level<-length(unique(name_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]]))
+      if(num_level>1){
+      # if(length(table(name_list$x))>1){
         shiny::updateNumericInput(session = session, 
                                   inputId = "input_variable_no", 
                                   value = num_level)
       }
     }
-  
+    
     if(input$input_component==c("covariate")){
       shinyjs::show("name_panel")
       shinyjs::show("beta_panel")
@@ -234,10 +239,14 @@ server <- function(input, output, session){
 
   #create tables based on input
   shiny::observeEvent(input$input_variable_no, {
-    
+    print(input$input_variable_no)
     observe({
       num_rows <- input$input_variable_no
-      new_rows <- rep("", num_rows)
+      new_rows <-  if(input$input_component=="fixed categorical"){
+        unique(name_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]])
+      }else{
+        rep("", num_rows)
+      }
       update_df <- data.frame(Name = new_rows)
       name_tab$x <- update_df
     })
@@ -422,19 +431,19 @@ server <- function(input, output, session){
       ## add in names if they are entered
       param_list[[update_comp]]$names <- 
         if(!all(nchar(as.matrix(name_tab$x))==0)) {
-          as.character(as.matrix(name_tab$x))
+          unname(as.character(as.matrix(name_tab$x)))
         }else{
           paste0(update_comp,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
         }
     }
 
-      # print(reactiveValuesToList(param_list))
+      print(reactiveValuesToList(param_list))
       
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
-
+      print("1")
       var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
-      
+      print("2")
       shinyjs::hide("component_type")
       shinyjs::hide("input_variable_no")
       shinyjs::hide("name_panel")
@@ -448,8 +457,18 @@ server <- function(input, output, session){
         inputId = "choose_component",
         selected = ""
       )
+ 
+       shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "input_component",
+        selected = ""
+      )
 
-      # input$input_component<-""
+      shiny::updateNumericInput(
+        session = session,
+        inputId = "input_variable_no",
+        value = 1
+      )
 
   })
   
