@@ -239,11 +239,11 @@ server <- function(input, output, session){
 
   #create tables based on input
   shiny::observeEvent(input$input_variable_no, {
-    print(input$input_variable_no)
+    
     observe({
       num_rows <- input$input_variable_no
       new_rows <-  if(input$input_component=="fixed categorical"){
-        unique(name_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]])
+        as.character(unique(name_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]]))
       }else{
         rep("", num_rows)
       }
@@ -437,13 +437,13 @@ server <- function(input, output, session){
         }
     }
 
-      print(reactiveValuesToList(param_list))
+      # print(reactiveValuesToList(param_list))
       
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
-      print("1")
+      
       var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
-      print("2")
+      
       shinyjs::hide("component_type")
       shinyjs::hide("input_variable_no")
       shinyjs::hide("name_panel")

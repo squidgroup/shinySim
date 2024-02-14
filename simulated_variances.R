@@ -31,7 +31,7 @@ make_big_matrix<-function(x){
 	mat_index <- c(0,cumsum(sapply(x, function(i) nrow(i))))
 	
 	mat <- diag(max(mat_index))
-	colnames(mat) <- rownames(mat) <-all_names
+	colnames(mat) <- rownames(mat) <- all_names
 
 	for(i in 2:length(mat_index)){
 		indexes<-(mat_index[i-1]+1):mat_index[i]
@@ -92,6 +92,11 @@ simulated_variance <- function(parameters,data_structure){
 	# 	message("This will be inaccurate with transformed variables (i.e. using the functions argument)")
 	# }
 
+	#makes sure all the components have the right names
+	for(i in 1:length(param)){
+		names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- param[[i]]$names
+	}
+
 	p_names <- names(param)[names(param)!="interactions"]
 	
 	fixed <- p_names[sapply(p_names, function(i) param[[i]]$fixed)]
@@ -151,9 +156,11 @@ simulated_variance <- function(parameters,data_structure){
 	}
 	# print("done interactions")
 
+
 	means <- do.call(c,c(lapply(param, function(p) p$mean ), use.names=FALSE))
 	# print("done means")
 
+	print(lapply(param, function(p) p$vcov ))
 	covs <- make_big_matrix(lapply(param, function(p) p$vcov ))
 	# print("done covs")
 
