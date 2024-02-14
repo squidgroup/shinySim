@@ -18,6 +18,10 @@ ui <- function() {
       width = 300,
       shiny::br(),
       
+    tabsetPanel(
+    type = "tabs",
+    tabPanel("Add", 
+
       ##input sturcture box
       shinydashboard::box(
        width = 12,
@@ -36,25 +40,86 @@ ui <- function() {
         ),
         #hidden group name
         shinyjs::hidden(
-          # shiny::div(
-            # id = "component_name",
-            shiny::textInput("input_component_name",
-                             value = "",
-              label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
-            # )
+          shiny::textInput("input_component_name",
+            value = "",
+            label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
           )
         ),
-        # br(),
+        
+        # hidden input component
+        shinyjs::hidden(
+        shinyWidgets::pickerInput(
+          inputId = "component_type",
+          label = NULL,
+          choices = c(
+            "predictor", "random", "fixed categorical",
+            "covariate"
+          ),
+          options = list(
+            title = "Component type"
+          )
+        )
+          
+        ),
+
+        #variable number
+        shinyjs::hidden(
+          shiny::numericInput(
+            inputId = "input_variable_no",
+            label = shiny::tags$span(style = "color: black;", "Number of Variables"),
+            value = 1, min = 1, max = 10
+        )),
+        
+      #   #code to remove numeric inputs
+        shiny::tags$head(
+          shiny::tags$style(shiny::HTML("
+      .dataTables_wrapper input[type='number']::-webkit-inner-spin-button,
+      .dataTables_wrapper input[type='number']::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      "))),
+    
+        #ADD tables
+        shinyjs::hidden(
+          shiny::wellPanel(style = "background: white",id="name_panel",
+            h3("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
+              margin-top: 0;"),
+            DT::DTOutput("name_table")
+        )),
+
+        shinyjs::hidden(
+          shiny::wellPanel(style = "background: white",id="mean_panel",
+           h3("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+              margin-top: 0;"),
+           DT::DTOutput("mean_table")
+        )),
+
+        shinyjs::hidden(
+          shiny::wellPanel(style = "background: white",id="vcov_panel",
+            h3("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+              margin-top: 0;"),
+            DT::DTOutput("vcov_table")
+        )),
+    
+        shinyjs::hidden(
+          shiny::wellPanel(style = "background: white",id="beta_panel",
+            h3("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+              margin-top: 0;"),
+            DT::DTOutput("beta_table")
+        )),
+
         shiny::tags$div(
           style = "display: flex; justify-content: center;",
           shiny::actionButton(
           "add_component",
           label = "Add",
           style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-        ),      
+        )     
+      )
+
       ),
-      
-      ##update component box
+    tabPanel("Update", 
       shinydashboard::box(
         width = 12,
         status = "primary",
@@ -70,23 +135,12 @@ ui <- function() {
             title = "Component"
           )
         ),
-        #hidden group name
-        # shinyjs::hidden(
-        #   shiny::div(
-        #     id = "component_name",
-        #     shiny::textInput("input_component_name",
-        #                      value = "",
-        #       label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
-        #     )
-        #   )
-        # ),
         
         #hidden input component
         shinyjs::hidden(
-          shiny::div(
-            id = "component_type",
+
         shinyWidgets::pickerInput(
-          inputId = "input_component",
+          inputId = "component_type_edit",
           label = NULL,
           choices = c(
             "predictor", "random", "fixed categorical",
@@ -96,17 +150,14 @@ ui <- function() {
             title = "Component type"
           )
         )
-          )
         ),
 
         #variable number
         shinyjs::hidden(
-        # shiny::div(
-        shiny::numericInput(
-          inputId = "input_variable_no",
-          label = shiny::tags$span(style = "color: black;", "Number of Variables"),
-          value = 1, min = 1, max = 10
-        # )
+          shiny::numericInput(
+            inputId = "input_variable_no_edit",
+            label = shiny::tags$span(style = "color: black;", "Number of Variables"),
+            value = 1, min = 1, max = 10
         )),
         
         #code to remove numeric inputs
@@ -117,44 +168,42 @@ ui <- function() {
         -webkit-appearance: none;
         margin: 0;
       }
-    "
-    ))
-        ),
+      "))),
     
         #tables#
-                shinyjs::hidden(
-    shiny::wellPanel(style = "background: white",id="name_panel",
-           h3("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
+        shinyjs::hidden(
+          shiny::wellPanel(style = "background: white",id="name_panel_edit",
+            h3("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
               margin-top: 0;"),
-          DT::DTOutput("name_table")
-    )),
+            # DT::DTOutput("name_table")
+        )),
 
         shinyjs::hidden(
-    shiny::wellPanel(style = "background: white",id="mean_panel",
-          h3("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+          shiny::wellPanel(style = "background: white",id="mean_panel_edit",
+           h3("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
-          DT::DTOutput("mean_table")
-    )),
+           # DT::DTOutput("mean_table")
+        )),
 
         shinyjs::hidden(
-    shiny::wellPanel(style = "background: white",id="vcov_panel",
-          h3("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+          shiny::wellPanel(style = "background: white",id="vcov_panel_edit",
+            h3("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
-          DT::DTOutput("vcov_table")
-    )),
+            # DT::DTOutput("vcov_table")
+        )),
     
-            shinyjs::hidden(
-    shiny::wellPanel(style = "background: white",id="beta_panel",
-          h3("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
+        shinyjs::hidden(
+          shiny::wellPanel(style = "background: white",id="beta_panel_edit",
+            h3("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
-          DT::DTOutput("beta_table")
-    )),
+            # DT::DTOutput("beta_table")
+        )),
     
-    shinyjs::hidden(
-        shiny::numericInput(
-          inputId = "intercept_panel",
-          label = shiny::tags$span(style = "color: black;", "Intercept"),
-          value = 0
+        shinyjs::hidden(
+          shiny::numericInput(
+            inputId = "intercept_panel",
+            label = shiny::tags$span(style = "color: black;", "Intercept"),
+            value = 0
         )),
             #covcorr radio
         #   shinyWidgets::radioGroupButtons(
@@ -180,46 +229,15 @@ ui <- function() {
           style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
         )
         )
+    ))
+
+
+      
+      ##update component box
+      
       ),
 
-      # depending on each component different things come up.
-      # Hidden boxes - four things. little tables.
-      # names - always comes up, depends on numerinput
-      # names, mean and beta, number of elements equal to input variable number.
-      # 1xn
-      # vcov, little matrix (n by n).
-      #n = variables
-      # radio button with covariance or correlation.
-
-    ##edit compment box
-      #shinydashboard::box(
-       # width = 12,
-        #status = "primary",
-        #solidHeader = TRUE,
-        #title = "Edit Component",
-        #pickerinput for component
-        #shinyWidgets::pickerInput(
-        #  inputId = "edit_component",
-         # label = NULL,
-          #choices = c(
-          #  "predictor", "random", "fixed categorical",
-           # "covariate"
-          #),
-          #options = list(
-          #  title = "Choose component"
-          #)
-        #),
-        #pickerinput to select group
-        #shinyWidgets::pickerInput(
-         # inputId = "edit_group",
-        #  label = NULL,
-         # choices = c("a", "b", "c", "d"),
-        #  options = list(
-         #   title = "Group"
-        #  )
-        #),
-      #)
-    #),
+  
     #dashbaord main
     body = shinydashboard::dashboardBody(
       shiny::br(),

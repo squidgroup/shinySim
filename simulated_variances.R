@@ -160,7 +160,6 @@ simulated_variance <- function(parameters,data_structure){
 	means <- do.call(c,c(lapply(param, function(p) p$mean ), use.names=FALSE))
 	# print("done means")
 
-	print(lapply(param, function(p) p$vcov ))
 	covs <- make_big_matrix(lapply(param, function(p) p$vcov ))
 	# print("done covs")
 

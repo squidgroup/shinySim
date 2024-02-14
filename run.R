@@ -5,7 +5,7 @@ shinySim <- function(data.struc = NULL){
     data.struc <- "Missing"
     shiny_env <- 1
     envir = as.environment(shiny_env)
-    print("Loading without specified data structure")
+    # print("Loading without specified data structure")
     assign("data.struc", data.struc, envir = envir)
   } else {
     #else if data.struc is not missing then label the data.struc object as the provided datapath (important for SS initation). 
@@ -13,7 +13,7 @@ shinySim <- function(data.struc = NULL){
     data.struc <- data.struc
     shiny_env <- 1
     envir = as.environment(shiny_env)
-    print("Loading data structure")
+    # print("Loading data structure")
     assign("data.struc", data.struc, envir = envir)
   }
   
@@ -21,7 +21,7 @@ shinySim <- function(data.struc = NULL){
   
 }
 
-#setwd("/Users/joelpick/github/shinySim")
+setwd("/Users/joelpick/github/shinySim")
 source("equation_writing.R")
 source("simulated_variances.R")
 
