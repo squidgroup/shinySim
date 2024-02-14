@@ -175,28 +175,28 @@ ui <- function() {
           shiny::wellPanel(style = "background: white",id="name_panel_edit",
             h3("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
               margin-top: 0;"),
-            # DT::DTOutput("name_table")
+            DT::DTOutput("name_table_edit")
         )),
 
         shinyjs::hidden(
           shiny::wellPanel(style = "background: white",id="mean_panel_edit",
            h3("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
-           # DT::DTOutput("mean_table")
+           DT::DTOutput("mean_table_edit")
         )),
 
         shinyjs::hidden(
           shiny::wellPanel(style = "background: white",id="vcov_panel_edit",
             h3("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
-            # DT::DTOutput("vcov_table")
+            DT::DTOutput("vcov_table_edit")
         )),
     
         shinyjs::hidden(
           shiny::wellPanel(style = "background: white",id="beta_panel_edit",
             h3("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold;margin-bottom: 0;
               margin-top: 0;"),
-            # DT::DTOutput("beta_table")
+            DT::DTOutput("beta_table_edit")
         )),
     
         shinyjs::hidden(

@@ -5,18 +5,35 @@ manyToggle <- function(show=NULL,hide=NULL){
   for(j in 1:length(hide)) shinyjs::hide(hide[j])
 }
 
+
+
 server <- function(input, output, session){
 
+  # ro <- shiny::reactiveValues(x = NULL)
+  # editTable <- function(table_name,cell_edit,reactive_object,session){
+      
+  #     ro$x <<- reactive_object
+  #     proxy <<- DT::dataTableProxy(table_name,session=session)
+      
+  #     ro$x[cell_edit$row, cell_edit$col+1] <<- DT::coerceValue(cell_edit$value, ro$x[cell_edit$row, cell_edit$col+1])
+  #     DT::replaceData(proxy, ro$x, resetPaging = FALSE)
+  # }
+
+  
   ## list of added components as well as interactions
   component_list <- shiny::reactiveValues(
     x = data.frame(component=c("intercept","residual"),group=c("intercept","residual")))
   #named_list
   name_list <- shiny::reactiveValues(x = NULL)
   #table data
-  name_tab <- shiny::reactiveValues(x = data.frame(Name = NA))
-  beta_tab <- shiny::reactiveValues(x = data.frame(Beta = NA))
-  mean_tab <- shiny::reactiveValues(x = data.frame(Mean = NA))
-  vcov_tab <- shiny::reactiveValues(x = data.frame(Vcov = NA))
+  name_tab <- shiny::reactiveValues(x = data.frame(Name = NA),
+    edit=NULL)
+  beta_tab <- shiny::reactiveValues(x = data.frame(Beta = NA),
+    edit=NULL)
+  mean_tab <- shiny::reactiveValues(x = data.frame(Mean = NA),
+    edit=NULL)
+  vcov_tab <- shiny::reactiveValues(x = data.frame(Vcov = NA),
+    edit=NULL)
   
   residual_start = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)
 
@@ -242,59 +259,12 @@ shiny::observeEvent(input$input_group, {
 
   })
 
-  #create proxies to edit data
-  proxy_vcov <- DT::dataTableProxy("vcov_table")
-  proxy_name <- DT::dataTableProxy("name_table")
-  proxy_beta <- DT::dataTableProxy("beta_table")
-  proxy_mean <- DT::dataTableProxy("mean_table")
-  
-  #record the data edit
-  shiny::observeEvent(input$name_table_cell_edit, {
-    info <- input$name_table_cell_edit
-    i <- info$row
-    j <- info$col+1
-    v <- info$value
-    
-    name_tab$x[i, j] <<- DT::coerceValue(v, name_tab$x[i, j])
-    DT::replaceData(proxy_name, name_tab$x, resetPaging = FALSE)
-   # print(name_tab$x)
-  })
-  
-  #record the data edit
-  shiny::observeEvent(input$vcov_table_cell_edit, {
-    info <- input$vcov_table_cell_edit
-    i <- info$row
-    j <- info$col+1
-    v <- info$value
-    
-    vcov_tab$x[i, j] <<- DT::coerceValue(v, vcov_tab$x[i, j])
-    DT::replaceData(proxy_vcov, vcov_tab$x, resetPaging = FALSE)
-    str(vcov_tab$x)
-  })
-  
-  #record the data edit
-  shiny::observeEvent(input$beta_table_cell_edit, {
-    info <- input$beta_table_cell_edit
-    i <- info$row
-    j <- info$col+1
-    v <- info$value
-    
-    beta_tab$x[i, j] <<- DT::coerceValue(v, beta_tab$x[i, j])
-    DT::replaceData(proxy_beta, beta_tab$x,resetPaging = FALSE)
-    str(beta_tab$x)
-  })
-  
-  #record the data edit
-  shiny::observeEvent(input$mean_table_cell_edit, {
-    info <- input$mean_table_cell_edit
-    i <- info$row
-    j <- info$col+1
-    v <- info$value
-    
-    mean_tab$x[i, j] <<- DT::coerceValue(v, mean_tab$x[i, j])
-    DT::replaceData(proxy_mean, mean_tab$x,resetPaging = FALSE)
-    str(mean_tab$x)
-  })
+  # table_name,cell_edit_name,reactive_object
+  # shiny::observeEvent(input$name_table_cell_edit, {
+  #   print(input$name_table_cell_edit)
+  #   editTable("name_table",input$name_table_cell_edit,name_tab$x,session = session)
+  # })
+
   
 
 
@@ -407,63 +377,196 @@ shiny::observeEvent(input$input_group, {
   shiny::observeEvent(input$choose_component, {
 
 
-    if(input$choose_component %in% c("","intercept","observation","interactions","residual")){
-      shinyjs::hide("component_type_edit")
+   if(input$choose_component %in% c("","intercept","observation","interactions","residual")){
+      manyToggle(hide=c("component_type_edit"))
     }else{
-      shinyjs::show("component_type_edit")
-      shinyjs::hide("input_variable_no_edit")
-      shinyjs::hide("beta_panel_edit")
-      shinyjs::hide("mean_panel_edit")
-      shinyjs::hide("vcov_panel_edit")
-      shinyjs::hide("name_panel_edit")
+      manyToggle(
+        show=c("component_type_edit"),
+        hide=c("input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","intercept_panel")
+      )
     }
 
-    if(input$choose_component %in% c("")){
-      shinyjs::hide("input_variable_no_edit")
-      shinyjs::hide("beta_panel_edit")
-      shinyjs::hide("mean_panel_edit")
-      shinyjs::hide("vcov_panel_edit")
-      shinyjs::hide("name_panel_edit")
-      shinyjs::hide("intercept_panel")
-    }
-
-    if(input$choose_component %in% c("intercept")){
-      shinyjs::hide("input_variable_no_edit")
-      shinyjs::hide("beta_panel_edit")
-      shinyjs::hide("mean_panel_edit")
-      shinyjs::hide("vcov_panel_edit")
-      shinyjs::hide("name_panel_edit")
-      shinyjs::show("intercept_panel")
+    if(input$choose_component == c("")){
+      manyToggle( 
+        hide=c("input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","intercept_panel")
+      )
     }
 
     if(input$choose_component == c("observation")){
-      shinyjs::show("input_variable_no_edit")
-      shinyjs::show("name_panel_edit")
-      shinyjs::show("mean_panel_edit")
-      shinyjs::show("vcov_panel_edit")
-      shinyjs::show("beta_panel_edit")
-      shinyjs::hide("intercept_panel")
+      manyToggle(
+        show=c("input_variable_no_edit", "name_panel_edit", "mean_panel_edit", "vcov_panel_edit", "beta_panel_edit"),
+        hide="intercept_panel"
+      )
     }
     
     if(input$choose_component == c("interactions")){
-      shinyjs::show("input_variable_no_edit")
-      shinyjs::show("name_panel_edit")
-      shinyjs::show("beta_panel_edit")
-      shinyjs::hide("mean_panel_edit")
-      shinyjs::hide("vcov_panel_edit")
-      shinyjs::hide("intercept_panel")
+      manyToggle(
+        show=c("input_variable_no_edit", "name_panel_edit", "beta_panel_edit"),
+        hide=c( "mean_panel_edit", "vcov_panel_edit","intercept_panel")
+      )
     }
-    
+
+    if(input$choose_component %in% c("intercept")){
+      manyToggle(
+        show="intercept_panel",
+        hide=c( "input_variable_no_edit", "name_panel_edit", "beta_panel_edit","mean_panel_edit", "vcov_panel_edit")
+      )
+    }
+
+
     if(input$choose_component == c("residual")){
-      shinyjs::show("vcov_panel_edit")
-      shinyjs::show("beta_panel_edit")
-      shinyjs::hide("mean_panel_edit")
-      shinyjs::hide("input_variable_no_edit")
-      shinyjs::hide("name_panel_edit")
-      shinyjs::hide("intercept_panel")
+      manyToggle(
+        show=c("vcov_panel_edit", "beta_panel_edit"),
+        hide=c( "input_variable_no_edit", "name_panel_edit","mean_panel_edit", "intercept_panel")
+      )
+}
+    if(!input$choose_component %in% c("","intercept")){
+print(reactiveValuesToList(param_list))
+      name_tab$edit <- data.frame(Name=param_list[[input$choose_component]]$names)
+      mean_tab$edit <- data.frame(Mean=param_list[[input$choose_component]]$mean)
+      beta_tab$edit <- data.frame(Beta=param_list[[input$choose_component]]$beta)
+      vcov_update <- as.data.frame(param_list[[input$choose_component]]$vcov)
+      colnames(vcov_update) <- 1:nrow(param_list[[input$choose_component]]$vcov)
+      vcov_tab$edit <- vcov_update
     }
   
-  })
+
+     #  name_tab$edit <- data.frame(Name=param_list[[input$choose_component]]$names)
+     #  beta_tab$edit <- data.frame(Beta=param_list[[input$choose_component]]$beta)
+     # # observe({ 
+     #  mean_tab$edit <- data.frame(Mean=param_list[[input$choose_component]]$mean)
+     # # observe({ 
+     #  vcov_update <- as.data.frame(param_list[[input$choose_component]]$vcov)
+     #  colnames(vcov_update) <- 1:num_rows#})
+     #  vcov_tab$edit <- vcov_update
+
+
+    js <- "table.on('click', 'td', function() { 
+    $(this).dblclick();
+  });"
+      output$beta_table_edit <- DT::renderDT(
+        DT::datatable(
+          beta_tab$edit,
+          editable = list(target = "cell"),
+          selection = 'none',
+          rownames = FALSE,
+          colnames = NULL,
+          callback = DT::JS(js),
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
+          ) |> DT::formatStyle(1,`text-align` = 'left')
+      )
+
+      output$vcov_table_edit <- DT::renderDT(
+        DT::datatable(
+          vcov_tab$edit,
+          selection = 'none',
+          rownames = FALSE,
+          colnames = NULL,
+          callback = DT::JS(js),
+          editable = list(target = "cell"),
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
+        ) |> DT::formatStyle(1:nrow(vcov_tab$edit),`text-align` = 'left')
+      )
+
+
+
+       output$name_table_edit <- DT::renderDT(
+        DT::datatable(
+          name_tab$edit,
+          selection = 'none',
+          rownames = FALSE,
+          colnames = NULL,
+          callback = DT::JS(js),
+          editable = list(target = "cell"),
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100,
+                         rowCallback = DT::JS(
+                           'function(row, data) {',
+                           '$("td", row).css("height", "20px");', # Set row height
+                           '}'
+                         )),
+        ) |> DT::formatStyle(1,`text-align` = 'left') |>
+          DT::formatStyle(names(name_tab$x), lineHeight = '30px')
+      )
+
+      output$mean_table_edit <- DT::renderDT(
+        DT::datatable(
+          mean_tab$edit,
+          rownames = FALSE,
+          colnames = NULL,
+          callback = DT::JS(js),
+          editable = list(target = "cell"),
+          selection = 'none',
+          class = list(stripe = FALSE),
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
+        ) |> DT::formatStyle(1,`text-align` = 'left')
+      )
+      })
+
+
+  
+
+
+
+
+  # #create proxies to edit data
+  # proxy_vcov <- DT::dataTableProxy("vcov_table")
+  # proxy_name <- DT::dataTableProxy("name_table")
+  # proxy_beta <- DT::dataTableProxy("beta_table")
+  # proxy_mean <- DT::dataTableProxy("mean_table")
+  
+  # #record the data edit
+  # shiny::observeEvent(input$name_table_cell_edit, {
+  #   info <- input$name_table_cell_edit
+  #   i <- info$row
+  #   j <- info$col+1
+  #   v <- info$value
+    
+  #   name_tab$x[i, j] <<- DT::coerceValue(v, name_tab$x[i, j])
+  #   DT::replaceData(proxy_name, name_tab$x, resetPaging = FALSE)
+  #  # print(name_tab$x)
+  # })
+  
+  # #record the data edit
+  # shiny::observeEvent(input$vcov_table_cell_edit, {
+  #   info <- input$vcov_table_cell_edit
+  #   i <- info$row
+  #   j <- info$col+1
+  #   v <- info$value
+    
+  #   vcov_tab$x[i, j] <<- DT::coerceValue(v, vcov_tab$x[i, j])
+  #   DT::replaceData(proxy_vcov, vcov_tab$x, resetPaging = FALSE)
+  #   str(vcov_tab$x)
+  # })
+  
+  # #record the data edit
+  # shiny::observeEvent(input$beta_table_cell_edit, {
+  #   info <- input$beta_table_cell_edit
+  #   i <- info$row
+  #   j <- info$col+1
+  #   v <- info$value
+    
+  #   beta_tab$x[i, j] <<- DT::coerceValue(v, beta_tab$x[i, j])
+  #   DT::replaceData(proxy_beta, beta_tab$x,resetPaging = FALSE)
+  #   str(beta_tab$x)
+  # })
+  
+  # #record the data edit
+  # shiny::observeEvent(input$mean_table_cell_edit, {
+  #   info <- input$mean_table_cell_edit
+  #   i <- info$row
+  #   j <- info$col+1
+  #   v <- info$value
+    
+  #   mean_tab$x[i, j] <<- DT::coerceValue(v, mean_tab$x[i, j])
+  #   DT::replaceData(proxy_mean, mean_tab$x,resetPaging = FALSE)
+  #   str(mean_tab$x)
+  # })
+  
+
+
   
   shiny::observeEvent(input$component_type_edit, {
   
@@ -546,9 +649,9 @@ shiny::observeEvent(input$input_group, {
       #make squidSim parameter list 
       param_list[[update_comp]] <- list(
         group = update_group,
-        beta = unname(as.matrix(beta_tab$x)),
-        mean = as.numeric(as.matrix(mean_tab$x)),
-        vcov = unname(as.matrix(vcov_tab$x))
+        beta = unname(as.matrix(beta_tab$edit)),
+        mean = as.numeric(as.matrix(mean_tab$edit)),
+        vcov = unname(as.matrix(vcov_tab$edit))
       )
       
       if(update_group != "interactions"){
@@ -558,10 +661,10 @@ shiny::observeEvent(input$input_group, {
 
       ## add in names if they are entered
       param_list[[update_comp]]$names <- 
-        if(!all(nchar(as.matrix(name_tab$x))==0)) {
-          unname(as.character(as.matrix(name_tab$x)))
+        if(!all(nchar(as.matrix(name_tab$edit))==0)) {
+          unname(as.character(as.matrix(name_tab$edit)))
         }else{
-          paste0(update_comp,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
+          paste0(update_comp,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$edit)})
         }
     }
 
@@ -572,12 +675,12 @@ shiny::observeEvent(input$input_group, {
       
       var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
       
-      shinyjs::hide("component_type")
-      shinyjs::hide("input_variable_no")
-      shinyjs::hide("name_panel")
-      shinyjs::hide("mean_panel")
-      shinyjs::hide("vcov_panel")
-      shinyjs::hide("beta_panel")
+      shinyjs::hide("component_type_edit")
+      shinyjs::hide("input_variable_no_edit")
+      shinyjs::hide("name_panel_edit")
+      shinyjs::hide("mean_panel_edit")
+      shinyjs::hide("vcov_panel_edit")
+      shinyjs::hide("beta_panel_edit")
       shinyjs::hide("intercept_panel")
       
       shinyWidgets::updatePickerInput(
@@ -588,13 +691,13 @@ shiny::observeEvent(input$input_group, {
  
        shinyWidgets::updatePickerInput(
         session = session,
-        inputId = "component_type",
+        inputId = "component_type_edit",
         selected = ""
       )
 
       shiny::updateNumericInput(
         session = session,
-        inputId = "input_variable_no",
+        inputId = "input_variable_no_edit",
         value = 1
       )
 
@@ -602,6 +705,118 @@ shiny::observeEvent(input$input_group, {
   
 
 
+
+
+##### Table crap
+
+
+  
+  #record the data edit
+  shiny::observeEvent(input$name_table_cell_edit, {
+    proxy_name <- DT::dataTableProxy("name_table")
+    info <- input$name_table_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    name_tab$x[i, j] <<- DT::coerceValue(v, name_tab$x[i, j])
+    DT::replaceData(DT::dataTableProxy("name_table"), name_tab$x, resetPaging = FALSE)
+   # print(name_tab$x)
+  })
+  
+  #record the data edit
+  shiny::observeEvent(input$vcov_table_cell_edit, {
+    proxy_vcov <- DT::dataTableProxy("vcov_table")
+    info <- input$vcov_table_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    vcov_tab$x[i, j] <<- DT::coerceValue(v, vcov_tab$x[i, j])
+    DT::replaceData(proxy_vcov, vcov_tab$x, resetPaging = FALSE)
+    str(vcov_tab$x)
+  })
+  
+  #record the data edit
+  shiny::observeEvent(input$beta_table_cell_edit, {
+    proxy_beta <- DT::dataTableProxy("beta_table")
+    info <- input$beta_table_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    beta_tab$x[i, j] <<- DT::coerceValue(v, beta_tab$x[i, j])
+    DT::replaceData(proxy_beta, beta_tab$x,resetPaging = FALSE)
+    str(beta_tab$x)
+  })
+  
+  #record the data edit
+  shiny::observeEvent(input$mean_table_cell_edit, {
+    proxy_mean <- DT::dataTableProxy("mean_table")
+    info <- input$mean_table_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    mean_tab$x[i, j] <<- DT::coerceValue(v, mean_tab$x[i, j])
+    DT::replaceData(proxy_mean, mean_tab$x,resetPaging = FALSE)
+    str(mean_tab$x)
+  })
+
+
+
+
+  #record the data edit
+  shiny::observeEvent(input$name_table_edit_cell_edit, {
+    proxy_name <- DT::dataTableProxy("name_table_edit")
+    info <- input$name_table_edit_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    name_tab$edit[i, j] <<- DT::coerceValue(v, name_tab$edit[i, j])
+    DT::replaceData(DT::dataTableProxy("name_table"), name_tab$edit, resetPaging = FALSE)
+   # print(name_tab$edit)
+  })
+  
+  #record the data edit
+  shiny::observeEvent(input$vcov_table_edit_cell_edit, {
+    proxy_vcov <- DT::dataTableProxy("vcov_table_edit")
+    info <- input$vcov_table_edit_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    vcov_tab$edit[i, j] <<- DT::coerceValue(v, vcov_tab$edit[i, j])
+    DT::replaceData(proxy_vcov, vcov_tab$edit, resetPaging = FALSE)
+    str(vcov_tab$edit)
+  })
+  
+  #record the data edit
+  shiny::observeEvent(input$beta_table_edit_cell_edit, {
+    proxy_beta <- DT::dataTableProxy("beta_table_edit")
+    info <- input$beta_table_edit_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    beta_tab$edit[i, j] <<- DT::coerceValue(v, beta_tab$edit[i, j])
+    DT::replaceData(proxy_beta, beta_tab$edit,resetPaging = FALSE)
+    str(beta_tab$edit)
+  })
+  
+  #record the data edit
+  shiny::observeEvent(input$mean_table_edit_cell_edit, {
+    proxy_mean <- DT::dataTableProxy("mean_table_edit")
+    info <- input$mean_table_edit_cell_edit
+    i <- info$row
+    j <- info$col+1
+    v <- info$value
+    
+    mean_tab$edit[i, j] <<- DT::coerceValue(v, mean_tab$edit[i, j])
+    DT::replaceData(proxy_mean, mean_tab$edit,resetPaging = FALSE)
+    str(mean_tab$edit)
+  })
 
 
 
