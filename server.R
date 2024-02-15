@@ -285,6 +285,10 @@ shiny::observeEvent(input$input_group, {
     }else if(comp_name %in% component_list$x$component){
       shinyalert::shinyalert(title = "Component already added", type = "error")
     }else{
+      
+      if(input$component_type == "" & !(input$input_group %in% c("observation", "interaction"))){
+        shinyalert::shinyalert(title = "Please select a component type", type = "error")
+      }
     
     
       component_list$x<- data.frame(
@@ -822,27 +826,6 @@ print(reactiveValuesToList(param_list))
 
 ##############
 
-
-
-  #user name for popup
-  output$user <- shinydashboardPlus::renderUser({
-    shinydashboardPlus::dashboardUser(
-      image = "squidSim_logo.png", 
-      name = "shinySim",
-      subtitle = "by Ed Ivimey-Cook & Joel Pick", 
-      shiny::fluidRow(
-        shinydashboardPlus::dashboardUserItem(
-          width = 12,
-          shinydashboardPlus::socialButton(
-            href = "https://github.com/squidgroup/shinySim",
-            icon = icon("github")
-          )
-        )
-      )
-    )
-          })
-  
-  
   output$output_equation <- renderUI({
     shiny::withMathJax(paste("$$",output_list$x$equation,"$$"))
   })
