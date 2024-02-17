@@ -177,48 +177,50 @@ print_vector <- function(x){
 }
 
 write_code_part <- function(x, print_colours) { 
-if(x$component=="interactions"|| x$covariate || x$fixed){
-	show_beta <- TRUE
-	show_names <- if(x$covariate) FALSE else TRUE
-	show_group <- show_mean <- show_vcv <- FALSE
-}else{
-	show_group <- x$component !=	x$group
-	show_names <- !all(grepl("residual",x$group)) & !all(grepl(paste0(x$component,"_effect"),x$names))
-	show_beta <- any(x$beta!=1)
-	show_mean <- any(x$mean!=0)
-	random <- !show_beta & !show_mean
-	show_vcv <- x$group=="residual"|random|(!all(diag(x$vcov)==1) & !all(x$vcov[lower.tri(x$vcov)]==0))
-	show_vcv_mat <- !all(x$vcov[lower.tri(x$vcov)]==0)
-}
+	if(x$component=="interactions"){
+		x$covariate <- x$fixed <- FALSE
+	}
+	if(x$component=="interactions"|| x$covariate || x$fixed){
+		show_beta <- TRUE
+		show_names <- if(x$covariate) FALSE else TRUE
+		show_group <- show_mean <- show_vcv <- FALSE
+	}else{
+		show_group <- x$component !=	x$group
+		show_names <- !all(grepl("residual",x$group)) & !all(grepl(paste0(x$component,"_effect"),x$names))
+		show_beta <- any(x$beta!=1)
+		show_mean <- any(x$mean!=0)
+		random <- !show_beta & !show_mean
+		show_vcv <- x$group=="residual"|random|(!all(diag(x$vcov)==1) & !all(x$vcov[lower.tri(x$vcov)]==0))
+		show_vcv_mat <- !all(x$vcov[lower.tri(x$vcov)]==0)
+	}
 
-# show_covariate<-
-# if(x$fixed){
-	
-# }
-# if(x$covariate){
+	# show_covariate<-
+	# if(x$fixed){
+		
+	# }
+	# if(x$covariate){
 
-# }
+	# }
 
-paste0(
-	if(print_colours){paste0("<span style=\"color:",x$color,"\">")},
-	"  ", x$component, " = list(\n",	
-	paste0(c(	
-		if(show_group) paste0("    group = \"",x$group,"\""),
-		if(show_names) paste0("    names = c(\"",paste0(x$names,collapse="\",\""),"\")"),
-		if(show_beta) paste0("    beta = ",print_vector(x$beta)),
-		if(show_mean) paste0("    mean = ",print_vector(x$mean)),
-		if(show_vcv){ 
-			if(show_vcv_mat){
-				paste0("    vcov = matrix( c(",paste0(x$vcov,collapse=","),"), nrow = ",ncol(x$vcov),", ncol = ",ncol(x$vcov), ")")		
-			}else{
-				paste0("    vcov = ",print_vector(diag(x$vcov)))
-			}
-		},
-		if(x$fixed) "    fixed=TRUE",
-		if(x$covariate) "    covariate=TRUE"
-	),collapse=", \n"),
-"\n  )",if(print_colours){"</span>"},collapse="")
-
+	paste0(
+		if(print_colours){paste0("<span style=\"color:",x$color,"\">")},
+		"  ", x$component, " = list(\n",	
+		paste0(c(	
+			if(show_group) paste0("    group = \"",x$group,"\""),
+			if(show_names) paste0("    names = c(\"",paste0(x$names,collapse="\",\""),"\")"),
+			if(show_beta) paste0("    beta = ",print_vector(x$beta)),
+			if(show_mean) paste0("    mean = ",print_vector(x$mean)),
+			if(show_vcv){ 
+				if(show_vcv_mat){
+					paste0("    vcov = matrix( c(",paste0(x$vcov,collapse=","),"), nrow = ",ncol(x$vcov),", ncol = ",ncol(x$vcov), ")")		
+				}else{
+					paste0("    vcov = ",print_vector(diag(x$vcov)))
+				}
+			},
+			if(x$fixed) "    fixed=TRUE",
+			if(x$covariate) "    covariate=TRUE"
+		),collapse=", \n"),
+	"\n  )",if(print_colours){"</span>"},collapse="")
 }
 
 

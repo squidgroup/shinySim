@@ -174,6 +174,34 @@ ui <- function() {
                               )
               )
             ),
+
+            shinyjs::hidden(
+              shiny::tags$div(id = "interaction_panel",
+                              bs4Dash::box(
+                                width = 12, 
+                                status = "primary",
+                                solidHeader = FALSE,
+                                collapsible = FALSE,
+                                closable = FALSE,
+                                elevation = 1,
+                                title = shiny::tags$h2("Interaction variables", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
+              margin-top: 0;"),
+               shinyWidgets::pickerInput(
+                inputId = "int_var1",
+                choices = c(""),
+                options = list(
+                  title = "Variable 1"
+                )
+              ),
+               shinyWidgets::pickerInput(
+                inputId = "int_var2",
+                choices = c(""),
+                options = list(
+                  title = "Variable 2"
+                )
+              )
+            ))),
+
             shinyjs::hidden(
               shiny::tags$div(id = "beta_panel",
                               bs4Dash::box(
@@ -189,6 +217,8 @@ ui <- function() {
                               )
               )
             ),
+
+
             shiny::tags$div(
               style = "display: flex; justify-content: center;",
               shiny::actionButton(
@@ -225,17 +255,19 @@ ui <- function() {
             
             # hidden input component
             shinyjs::hidden(
-              shinyWidgets::pickerInput(
-                inputId = "component_type_edit",
-                label = NULL,
-                choices = c(
-                  "predictor", "random", "fixed categorical",
-                  "covariate"
-                ),
-                options = list(
-                  title = "Component type"
-                )
-              )
+              # shinyWidgets::pickerInput(
+              #   inputId = "component_type_edit",
+              #   label = NULL,
+              #   choices = c(
+              #     "predictor", "random", "fixed categorical",
+              #     "covariate"
+              #   ),
+              #   options = list(
+              #     title = "Component type"
+              #   )
+              # )
+              shiny::uiOutput("component_type_edit")
+
             ),
             
             # variable number

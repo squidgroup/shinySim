@@ -27,6 +27,6 @@ source("simulated_variances.R")
 
 
 # data_test <- squidSim::make_structure("individual(10)",repeat_obs=2)
-data_test <- squidSim::make_structure("sex(2)",repeat_obs=20,level_names=list(sex=c("F","M")))
+data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
 
 shinySim(data.struc = data_test)

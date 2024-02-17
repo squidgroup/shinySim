@@ -41,8 +41,12 @@ server <- function(input, output, session){
   ## list of added components as well as interactions
   component_list <- shiny::reactiveValues(
     x = data.frame(component=c("intercept","residual"),group=c("intercept","residual")))
-  #named_list
-  name_list <- shiny::reactiveValues(x = NULL)
+  
+  # list of group names form the data frame
+  group_list <- shiny::reactiveValues(x = NULL)
+  
+  all_names <- shiny::reactiveValues(x = c("residual"))
+
   #table data
   name_tab <- shiny::reactiveValues(x = data.frame(Name = NA),
     edit=NULL)
@@ -70,10 +74,10 @@ server <- function(input, output, session){
   #importing datas structure
   shiny::observe({
      if(nrow(data.struc) > 0 ){
-       name_list$x <- get(x = "data.struc", envir = globalenv())
-       # print(colnames(name_list$x))
+       group_list$x <- get(x = "data.struc", envir = globalenv())
+       # print(colnames(group_list$x))
     } else
-    name_list$x <- NULL
+    group_list$x <- NULL
   })
   
   #update inputgroup with column headers(wrap in observe event after)
@@ -83,7 +87,7 @@ server <- function(input, output, session){
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "input_group",
-        choices = c(colnames(name_list$x), "observation", "interactions")
+        choices = c(colnames(group_list$x), "observation", "interactions")
       )
     } else(shinyWidgets::updatePickerInput(
       session = session,
@@ -102,37 +106,39 @@ server <- function(input, output, session){
 
 shiny::observeEvent(input$input_group, {
 
-   shiny::updateNumericInput(session = session, 
-                                  inputId = "input_variable_no", 
-                                  value = 1)
+   shiny::updateNumericInput(
+    session = session, 
+    inputId = "input_variable_no", 
+    value = 1)
     #show or hide group name box if interaction/observation is not picked.
       # print(input$input_group)
 
     if(input$input_group %in% c("","observation","interactions")){
-      manyToggle(hide=c("component_type","input_component_name"))
+      manyToggle(hide=c("component_type","input_component_name", "interaction_panel"))
     }else{
       manyToggle(
         show=c("component_type","input_component_name"),
-        hide=c("input_variable_no", "beta_panel", "mean_panel", "vcov_panel", "name_panel")
+        hide=c("input_variable_no", "beta_panel", "mean_panel", "vcov_panel", "name_panel", "interaction_panel")
       )
     }
 
     if(input$input_group %in% c("")){
       manyToggle( 
-        hide=c("input_variable_no", "beta_panel", "mean_panel", "vcov_panel", "name_panel")
+        hide=c("input_variable_no", "beta_panel", "mean_panel", "vcov_panel", "name_panel", "interaction_panel")
       )
     }
 
     if(input$input_group == c("observation")){
       manyToggle(
-        show=c("input_variable_no", "name_panel", "mean_panel", "vcov_panel", "beta_panel")
+        show=c("input_variable_no", "name_panel", "mean_panel", "vcov_panel", "beta_panel"),
+        hide= "interaction_panel"
       )
     }
     
     if(input$input_group == c("interactions")){
       manyToggle(
-        show=c("input_variable_no", "name_panel", "beta_panel"),
-        hide=c( "mean_panel", "vcov_panel")
+        show=c( "interaction_panel", "beta_panel"),
+        hide=c("input_variable_no", "mean_panel", "name_panel", "vcov_panel")
       )
     }
     
@@ -141,9 +147,10 @@ shiny::observeEvent(input$input_group, {
   
   shiny::observeEvent(input$component_type, {
   
-    shiny::updateNumericInput(session = session, 
-                            inputId = "input_variable_no",
-                            value = 1)
+    shiny::updateNumericInput(
+      session = session, 
+      inputId = "input_variable_no",
+      value = 1)
 
     if(input$component_type==c("predictor")){ 
       manyToggle(
@@ -166,11 +173,12 @@ shiny::observeEvent(input$input_group, {
         hide=c("input_variable_no","mean_panel", "vcov_panel")
       )
       
-      num_level<-length(unique(name_list$x[[input$input_group]]))
+      num_level<-length(unique(group_list$x[[input$input_group]]))
       if(num_level>1){
-        shiny::updateNumericInput(session = session, 
-                                  inputId = "input_variable_no", 
-                                  value = num_level)
+        shiny::updateNumericInput(
+          session = session, 
+          inputId = "input_variable_no", 
+          value = num_level)
       }
       
     }
@@ -199,16 +207,14 @@ shiny::observeEvent(input$input_group, {
       num_rows <- input$input_variable_no
   
       name_tab$x <- data.frame(Name = if(input$component_type=="fixed categorical"){
-        as.character(unique(name_list$x[[input$input_group]]))
+        as.character(unique(group_list$x[[input$input_group]]))
       }else{
         rep("", num_rows)
       })
-      beta_tab$x <- data.frame(Beta = rep(1, num_rows))#})
-     # observe({ 
-      mean_tab$x <- data.frame(Mean = rep(0, num_rows))#})
-     # observe({ 
+      beta_tab$x <- data.frame(Beta = rep(1, num_rows))
+      mean_tab$x <- data.frame(Mean = rep(0, num_rows))
       vcov_update <- data.frame(diag(num_rows)) 
-      colnames(vcov_update) <- 1:num_rows#})
+      colnames(vcov_update) <- 1:num_rows
       vcov_tab$x <- vcov_update
     
     js <- "table.on('click', 'td', function() { 
@@ -293,25 +299,32 @@ shiny::observeEvent(input$input_group, {
 
   ### what happens when add component button is pressed
   shiny::observeEvent(input$add_component, {
-    print(component_list$x)
-      comp_name <- if(nchar(input$input_component_name) == 0){
-          input$input_group
-        }else{
-          input$input_component_name
-        } 
-      comp_group <- input$input_group
+    # print(component_list$x)
+    
+    comp_name <- if(nchar(input$input_component_name) == 0){
+        input$input_group
+      }else{
+        input$input_component_name
+      } 
+    comp_group <- input$input_group
+
+    int_names <- c(input$int_var1,input$int_var2)
+    #all_names$x
 
 
+    # if(comp_group == "interactions" && ! all(unique(c(strsplit(v_names,":"),recursive=TRUE)) %in% all_names$x) ){
+    #   shinyalert::shinyalert(title = "Variables included in interactions are not all specified in the 'names' arguments of other components", type = "error")
+    # }else 
+    if(comp_group == "interactions" && any(int_names=="")) {
+      shinyalert::shinyalert(title = "Variables need to be specified ", type = "error")
+    }else 
     if(input$input_group == ""){
       shinyalert::shinyalert(title = "Please select a group", type = "error")
     }else if(comp_name %in% component_list$x$component){
       shinyalert::shinyalert(title = "Component already added", type = "error")
+    }else if(input$component_type == "" & !(input$input_group %in% c("observation", "interactions"))){
+      shinyalert::shinyalert(title = "Please select a component type", type = "error")
     }else{
-      
-      if(input$component_type == "" & !(input$input_group %in% c("observation", "interaction"))){
-        shinyalert::shinyalert(title = "Please select a component type", type = "error")
-      }
-    
     
       component_list$x<- data.frame(
         component=c(component_list$x$component,comp_name),
@@ -323,6 +336,7 @@ shiny::observeEvent(input$input_group, {
         choices = component_list$x$component
       )
     
+
     # adds the component and group to the component list
  
       
@@ -333,32 +347,56 @@ shiny::observeEvent(input$input_group, {
         mean = as.numeric(as.matrix(mean_tab$x)),
         vcov = unname(as.matrix(vcov_tab$x))
       )
-      
-      if(comp_group != "interactions"){
-          param_list[[comp_name]]$fixed <- input$component_type == "fixed categorical"
-          param_list[[comp_name]]$covariate <- input$component_type == "covariate"
-      }
+ 
+     v_names <- unname(as.character(as.matrix(name_tab$x)))
 
       ## add in names if they are entered
       param_list[[comp_name]]$names <- 
-        if(!all(nchar(as.matrix(name_tab$x))==0)) {
-          unname(as.character(as.matrix(name_tab$x)))
+        if(comp_group == "interactions"){
+          paste0(input$int_var1,":",input$int_var2)
+        }else if(!all(nchar(v_names)==0)) {
+          v_names
         }else{
           paste0(comp_name,"_effect",if(input$input_variable_no>1){1:nrow(beta_tab$x)})
         }
 
-      print(reactiveValuesToList(param_list))
+     
+      if(comp_group != "interactions"){
+        param_list[[comp_name]]$fixed <- input$component_type == "fixed categorical"
+        param_list[[comp_name]]$covariate <- input$component_type == "covariate"
+        v_names2 <- param_list[[comp_name]]$names
+        all_names$x <- c(all_names$x ,v_names2)
+        print(all_names$x)
+      }
+
+      # print(reactiveValuesToList(param_list))
       
+      print("1")
+
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
       
+      print("2")
+
       var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
-      
+      print("3")
       ## restore everything
 
       manyToggle(hide=c("component_type", "input_variable_no", "name_panel", "mean_panel", "vcov_panel", "beta_panel"))
 
-       shinyWidgets::updatePickerInput(
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "int_var1",
+        choices = all_names$x,
+        selected = ""
+      )
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "int_var2",
+        choices = all_names$x,
+        selected = ""
+      )
+      shinyWidgets::updatePickerInput(
         session = session,
         inputId = "component_type",
         selected = ""
@@ -378,6 +416,8 @@ shiny::observeEvent(input$input_group, {
         inputId = "input_group",
         selected = ""
       )
+
+
     }
   })
 
@@ -402,68 +442,38 @@ shiny::observeEvent(input$input_group, {
 
   shiny::observeEvent(input$choose_component, {
 
+    update_param <- reactiveValuesToList(param_list)[[input$choose_component]]
 
    if(input$choose_component %in% c("","intercept","observation","interactions","residual")){
       manyToggle(hide=c("component_type_edit"))
     }else{
       
-
-
-    # if(input$component_type_edit==c("predictor")){
-      manyToggle(
-        show=c("component_type_edit"),
-        hide=c("input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","intercept_panel")
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "component_type_edit",
+        selected = if(update_param$covariate){"covariate"}else if(update_param$fixed){"fixed categorical"}else{"predictor"}
       )
 
-    #   shinyjs::show("input_variable_no")
-    #   shinyjs::show("name_panel")
-    #   shinyjs::show("mean_panel")
-    #   shinyjs::show("vcov_panel")
-    #   shinyjs::show("beta_panel")
-    #   shinyjs::hide("intercept_panel")
-    # }
-  
-    # if(input$component_type_edit==c("random")){
-    #   shinyjs::show("input_variable_no")
-    #   shinyjs::show("vcov_panel")
-    #   shinyjs::show("beta_panel")
-    #   shinyjs::show("name_panel")
-    #   shinyjs::hide("mean_panel")
-    #   shinyjs::hide("intercept_panel")
-    # }
+      if(input$component_type_edit==c("predictor")){
+        manyToggle(
+          show=c("input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","component_type_edit"),
+          hide=c("intercept_panel")
+        )
+      }
 
-    # if(input$component_type_edit==c("fixed categorical")){
-    #   # set number of 
-    #   # input$input_variable_no <-
-    #   shinyjs::hide("input_variable_no")
-    #   # fill in names from data.str
-    #   # shinyjs::show("name_panel")
-    #   shinyjs::show("name_panel")
-    #   shinyjs::show("beta_panel")
-    #   shinyjs::hide("vcov_panel")     
-    #   shinyjs::hide("mean_panel")
-    #   shinyjs::hide("intercept_panel")
-      
-    #   num_level<-length(unique(name_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]]))
-    #   if(num_level>1){
-    #   # if(length(table(name_list$x))>1){
-    #     shiny::updateNumericInput(session = session, 
-    #                               inputId = "input_variable_no", 
-    #                               value = num_level)
-    #   }
-    # }
-    
-    # if(input$component_type_edit==c("covariate")){
-    #   shinyjs::show("name_panel")
-    #   shinyjs::show("beta_panel")
-    #   shinyjs::hide("vcov_panel")     
-    #   shinyjs::hide("mean_panel")
-    #   shinyjs::hide("input_variable_no")
-    #   shinyjs::hide("intercept_panel")
-    # }
-    
+      if(input$component_type_edit==c("random")){
+        manyToggle(
+          show=c("input_variable_no_edit", "beta_panel_edit", "vcov_panel_edit", "name_panel_edit","component_type_edit"),
+          hide=c("mean_panel_edit", "intercept_panel")
+        )
+      }
 
-
+      if(input$component_type_edit%in%c("fixed categorical","covariate")){
+         manyToggle(
+          show=c("beta_panel_edit", "name_panel_edit","component_type_edit"),
+          hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
+        )
+      }
     }
 
     if(input$choose_component == c("")){
@@ -503,7 +513,7 @@ shiny::observeEvent(input$input_group, {
     
     if(!input$choose_component %in% c("","intercept")){
 # print(reactiveValuesToList(param_list))
-      update_param <- reactiveValuesToList(param_list)[[input$choose_component]]
+      
       name_tab$edit <- data.frame(Name=update_param$names)
       mean_tab$edit <- data.frame(Mean=update_param$mean)
       beta_tab$edit <- data.frame(Beta=update_param$beta)
@@ -515,14 +525,6 @@ shiny::observeEvent(input$input_group, {
         session = session, 
         inputId = "input_variable_no_edit",
         value = nrow(update_param$beta))
-    }
-
-    if(!input$choose_component %in% c("","intercept","interactions","observation","residual")){
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "component_type_edit",
-        selected = if(update_param$covariate){"covariate"}else if(update_param$fixed){"fixed categorical"}else{"predictor"}
-      )
     }
 
 
@@ -594,52 +596,52 @@ shiny::observeEvent(input$input_group, {
 
 
   
-  shiny::observeEvent(input$component_type_edit, {
+  # shiny::observeEvent(input$component_type_edit, {
   
-    # shiny::updateNumericInput(
-    #   session = session, 
-    #   inputId = "input_variable_no_edit", 
-    #   value = 1)
+  #   # shiny::updateNumericInput(
+  #   #   session = session, 
+  #   #   inputId = "input_variable_no_edit", 
+  #   #   value = 1)
 
-    if(input$component_type_edit==c("predictor")){
-      manyToggle(
-        show=c("component_type_edit","input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit"),
-        hide=c("intercept_panel")
-      )
-    }
+  #   if(input$component_type_edit==c("predictor")){
+  #     manyToggle(
+  #       show=c("component_type_edit","input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit"),
+  #       hide=c("intercept_panel")
+  #     )
+  #   }
   
-    if(input$component_type_edit==c("random")){
-      manyToggle(
-        show=c("component_type_edit","input_variable_no_edit", "beta_panel_edit", "vcov_panel_edit", "name_panel_edit"),
-        hide=c("mean_panel_edit", "intercept_panel")
-      )
-    }
+  #   if(input$component_type_edit==c("random")){
+  #     manyToggle(
+  #       show=c("component_type_edit","input_variable_no_edit", "beta_panel_edit", "vcov_panel_edit", "name_panel_edit"),
+  #       hide=c("mean_panel_edit", "intercept_panel")
+  #     )
+  #   }
 
-    if(input$component_type_edit==c("fixed categorical")){
-      manyToggle(
-        show=c("component_type_edit","beta_panel_edit","name_panel_edit"),
-        hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
-      )
+  #   if(input$component_type_edit==c("fixed categorical")){
+  #     manyToggle(
+  #       show=c("component_type_edit","beta_panel_edit","name_panel_edit"),
+  #       hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
+  #     )
 
-      num_level<-length(unique(name_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]]))
-      if(num_level>1){
-      # if(length(table(name_list$x))>1){
-        shiny::updateNumericInput(
-          session = session, 
-          inputId = "input_variable_no_edit", 
-          value = num_level)
-      }
-    }
+  #     num_level<-length(unique(group_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]]))
+  #     if(num_level>1){
+  #     # if(length(table(group_list$x))>1){
+  #       shiny::updateNumericInput(
+  #         session = session, 
+  #         inputId = "input_variable_no_edit", 
+  #         value = num_level)
+  #     }
+  #   }
     
-    if(input$component_type_edit==c("covariate")){
-      manyToggle(
-        show=c("component_type_edit","beta_panel_edit","name_panel_edit"),
-        hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
-      )
-    }
+  #   if(input$component_type_edit==c("covariate")){
+  #     manyToggle(
+  #       show=c("component_type_edit","beta_panel_edit","name_panel_edit"),
+  #       hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
+  #     )
+  #   }
     
     
-  })
+  # })
 
 
 

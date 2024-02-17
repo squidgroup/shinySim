@@ -86,6 +86,8 @@ make_big_matrix<-function(x){
 simulated_variance <- function(parameters,data_structure){
 	intercept <- parameters$intercept
 	param <- parameters[names(parameters)!="intercept"]
+	# 	components <- 	c("intercept",components[! components %in% c("intercept","interactions","residual")],if("interactions" %in% components){"interactions"},"residual")
+	
 	# known_predictors <- squid$known_predictors
 
 	# if(any(sapply(param, function(i) any(i$functions!="identity")))){
