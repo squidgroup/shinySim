@@ -1,9 +1,11 @@
 #' @title shinySim
 #' @description shiny interface to the squidSim package. 
 #' @return A simulated dataframe
+#' @param data.struc datastructure argument created using squidSim or other.
 #' @examples
-#' \donttest{
-#' data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
+#' \dontrun{
+#' data_test <- squidSim::make_structure("sex(2)/individual(10)",
+#' repeat_obs=2,level_names=list(sex=c("F","M")))
 #' shinySim(data.struc = data_test)
 #' }
 #' @export

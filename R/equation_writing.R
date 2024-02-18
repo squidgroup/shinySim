@@ -35,8 +35,8 @@
 #' @description multiple toggles
 #' @param show n/a
 #' @param hide n/a
+#' @keywords internal
 #' @export
-#' @noRd
 manyToggle <- function(show=NULL,hide=NULL){
   for(i in 1:length(show)) shinyjs::show(show[i])
   for(j in 1:length(hide)) shinyjs::hide(hide[j])
@@ -73,12 +73,12 @@ manyToggle <- function(show=NULL,hide=NULL){
   # }
 
 
-#' @title make.equation
+#' @title make_equation
 #' @description make equation
 #' @param parameters parameters to make the equation
 #' @param print_colours do you wantt to print colors? 
+#' @keywords internal
 #' @export
-#' @noRd
 make_equation<-function(parameters, print_colours=TRUE){
 
 	components <- names(parameters)
@@ -215,9 +215,9 @@ make_equation<-function(parameters, print_colours=TRUE){
 
 #' @title print_vector
 #' @description prints a vector
-#' @param x n/a
+#' @param x eqation
+#' @keywords internal
 #' @export
-#' @noRd
 print_vector <- function(x){
 
 	if(length(x)>1){
@@ -231,8 +231,8 @@ print_vector <- function(x){
 #' @description writes code
 #' @param x n/a
 #' @param print_colors n/a
+#' @keywords internal
 #' @export
-#' @noRd
 write_code_part <- function(x, print_colours) { 
 	if(x$component=="interactions"){
 		x$covariate <- x$fixed <- FALSE
