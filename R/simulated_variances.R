@@ -1,3 +1,10 @@
+
+#' @title prod_var
+#' @description produces variance
+#' @param means n/a
+#' @param vcov n/a
+#' @export
+#' @noRd
 ## function to compute expected variance of the product of variables. if two variables are given, accounts for non-independence of variables (i.e. non-0 covariance), but for more than 3 assumes that they are independent (don't' think there is a generalisation for the produce of 3 or more dependent variables)
 prod_var <- function(means,vcov){
 	vars <- diag(vcov)
@@ -15,6 +22,12 @@ prod_var <- function(means,vcov){
 	## https://stats.stackexchange.com/questions/60414/variance-of-product-of-k-correlated-random-variables
 }
 
+#' @title prod_means
+#' @description produces means
+#' @param means n/a
+#' @param vcov n/a
+#' @export
+#' @noRd
 prod_means <- function(means,vcov){
 	##https://www.physicsforums.com/threads/expectations-on-the-product-of-two-dependent-random-variables.276125/
 	
@@ -25,6 +38,11 @@ prod_means <- function(means,vcov){
 	}
 }
 
+#' @title make_big_matrix
+#' @description produces a big matrix
+#' @param x n/a
+#' @export
+#' @noRd
 #makes a big matrix out of list of vcov matrices
 make_big_matrix<-function(x){
 	all_names <- c(sapply(x, function(i) colnames(i) ), recursive=TRUE)
@@ -81,7 +99,7 @@ make_big_matrix<-function(x){
 #' simulated_variance(squid_data)
 #' }
 #' @export
-
+#' @noRd
 
 simulated_variance <- function(parameters,data_structure){
 	intercept <- parameters$intercept

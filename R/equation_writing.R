@@ -31,8 +31,54 @@
 # )
 # parameters <- dd$parameters
 
+#' @title manyToggle
+#' @description multiple toggles
+#' @param show n/a
+#' @param hide n/a
+#' @export
+#' @noRd
+manyToggle <- function(show=NULL,hide=NULL){
+  for(i in 1:length(show)) shinyjs::show(show[i])
+  for(j in 1:length(hide)) shinyjs::hide(hide[j])
+}
+
+# https://shiny.posit.co/r/articles/improve/modules/
+# print_table <- function(x){
+#   js <- "table.on('click', 'td', function() { 
+#     $(this).dblclick();
+#   });"
+  
+#   DT::renderDT(
+#     DT::datatable(
+#       x,
+#       editable = list(target = "cell"),
+#       selection = 'none',
+#       rownames = FALSE,
+#       colnames = NULL,
+#       callback = DT::JS(js),
+#       class = list(stripe = FALSE),
+#       options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
+#     ) |> DT::formatStyle(1,`text-align` = 'left')#if(is.matrix(x)){1:ncol(x)}else{1}
+#   )
+# }
+
+  # ro <- shiny::reactiveValues(x = NULL)
+  # editTable <- function(table_name,cell_edit,reactive_object,session){
+      
+  #     ro$x <<- reactive_object
+  #     proxy <<- DT::dataTableProxy(table_name,session=session)
+      
+  #     ro$x[cell_edit$row, cell_edit$col+1] <<- DT::coerceValue(cell_edit$value, ro$x[cell_edit$row, cell_edit$col+1])
+  #     DT::replaceData(proxy, ro$x, resetPaging = FALSE)
+  # }
 
 
+#' @title make.equation
+#' @description make equation
+#' @param parameters parameters to make the equation
+#' @param print_colours do you wantt to print colors? 
+#' @export
+#' @noRd
 make_equation<-function(parameters, print_colours=TRUE){
 
 	components <- names(parameters)
@@ -167,6 +213,11 @@ make_equation<-function(parameters, print_colours=TRUE){
 
 # x<-params[["interactions"]]
 
+#' @title print_vector
+#' @description prints a vector
+#' @param x n/a
+#' @export
+#' @noRd
 print_vector <- function(x){
 
 	if(length(x)>1){
@@ -176,6 +227,12 @@ print_vector <- function(x){
 	}
 }
 
+#' @title write_code_part
+#' @description writes code
+#' @param x n/a
+#' @param print_colors n/a
+#' @export
+#' @noRd
 write_code_part <- function(x, print_colours) { 
 	if(x$component=="interactions"){
 		x$covariate <- x$fixed <- FALSE

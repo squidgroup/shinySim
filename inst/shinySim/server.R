@@ -1,41 +1,5 @@
 # shinySim created by Ed Ivimey-Cook and Joel Pick. 26th January 2024
 
-manyToggle <- function(show=NULL,hide=NULL){
-  for(i in 1:length(show)) shinyjs::show(show[i])
-  for(j in 1:length(hide)) shinyjs::hide(hide[j])
-}
-
-# https://shiny.posit.co/r/articles/improve/modules/
-# print_table <- function(x){
-#   js <- "table.on('click', 'td', function() { 
-#     $(this).dblclick();
-#   });"
-  
-#   DT::renderDT(
-#     DT::datatable(
-#       x,
-#       editable = list(target = "cell"),
-#       selection = 'none',
-#       rownames = FALSE,
-#       colnames = NULL,
-#       callback = DT::JS(js),
-#       class = list(stripe = FALSE),
-#       options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-#     ) |> DT::formatStyle(1,`text-align` = 'left')#if(is.matrix(x)){1:ncol(x)}else{1}
-#   )
-# }
-
-  # ro <- shiny::reactiveValues(x = NULL)
-  # editTable <- function(table_name,cell_edit,reactive_object,session){
-      
-  #     ro$x <<- reactive_object
-  #     proxy <<- DT::dataTableProxy(table_name,session=session)
-      
-  #     ro$x[cell_edit$row, cell_edit$col+1] <<- DT::coerceValue(cell_edit$value, ro$x[cell_edit$row, cell_edit$col+1])
-  #     DT::replaceData(proxy, ro$x, resetPaging = FALSE)
-  # }
-
-
 server <- function(input, output, session){
   
   ## list of added components as well as interactions

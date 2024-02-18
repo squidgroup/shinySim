@@ -1,3 +1,13 @@
+#' @title shinySim
+#' @description shiny interface to the squidSim package. 
+#' @return A simulated dataframe
+#' @examples
+#' \donttest{
+#' data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
+#' shinySim(data.struc = data_test)
+#' }
+#' @export
+
 shinySim <- function(data.struc = NULL){
   #if data.struc is missing then label the data.struc object as missing (important for SD initation).
   #load into the environment the data.struc object and assign the UIs and Server into the env.
@@ -17,16 +27,9 @@ shinySim <- function(data.struc = NULL){
     assign("data.struc", data.struc, envir = envir)
   }
   
-  shiny::runApp()
+appDir <- system.file("shinySim", package = "shinySim")
+shiny::runApp(appDir, display.mode = "normal")
   
 }
 
-setwd("/Users/joelpick/github/shinySim")
-source("equation_writing.R")
-source("simulated_variances.R")
 
-
-# data_test <- squidSim::make_structure("individual(10)",repeat_obs=2)
-data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
-
-shinySim(data.struc = data_test)
