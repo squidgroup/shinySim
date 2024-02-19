@@ -13,7 +13,7 @@ bs4Dash::dashboardPage(
     ),
     fresh::bs4dash_layout(
       main_bg = "white",
-      sidebar_width = "350px"
+      sidebar_width = "475px"
     ),
     fresh::bs4dash_sidebar_light(
       bg = "white",
@@ -67,6 +67,13 @@ bs4Dash::dashboardPage(
       ")
       )
     ),
+    shiny::tags$head(shiny::tags$style(shiny::HTML("
+                              .shiny-split-layout > div {
+                                overflow: visible;
+                              }
+                              ")
+                              )
+                     ),
     shiny::tags$head(
       shiny::tags$style(
         shiny::HTML(
@@ -93,11 +100,12 @@ bs4Dash::dashboardPage(
       collapsible = FALSE,
       closable = FALSE,
       width = 12,
-      elevation = 0,
+      elevation = 1,
       ####### ADD Tab ########
       shiny::tabPanel(
         title = "Add",
         # inputgroup
+        shiny::splitLayout(
         shinyWidgets::pickerInput(
           inputId = "input_group",
           label = shiny::tags$span(style = "color: black;", "Select a group"),
@@ -113,8 +121,10 @@ bs4Dash::dashboardPage(
                            value = "",
                            label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
           )
+        )
         ),
         # hidden input component
+        shiny::splitLayout(
         shinyjs::hidden(
           shinyWidgets::pickerInput(
             inputId = "component_type",
@@ -135,29 +145,26 @@ bs4Dash::dashboardPage(
             label = shiny::tags$span(style = "color: black;", "Number of Variables"),
             value = 1, min = 1, max = 10
           )
+        )
         ),
         # ADD tables
+        shiny::splitLayout(
         shinyjs::hidden(
           shiny::tags$div(
             id = "name_panel",
-            shiny::tags$h2("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("name_table")
           )
         ),
         shinyjs::hidden(
           shiny::tags$div(
             id = "mean_panel",
-            shiny::tags$h2("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("mean_table")
           )
+        )
         ),
         shinyjs::hidden(
           shiny::tags$div(
             id = "vcov_panel",
-            shiny::tags$h2("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("vcov_table")
           )
         ),
@@ -185,8 +192,6 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shiny::tags$div(
             id = "beta_panel",
-            shiny::tags$h2("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("beta_table")
           )
         ),
@@ -241,11 +246,10 @@ bs4Dash::dashboardPage(
 
         # tables#
         # name
+        shiny::splitLayout(
         shinyjs::hidden(
           shiny::tags$div(
             id = "name_panel_edit",
-            shiny::tags$h2("Name", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("name_table_edit")
           )
         ),
@@ -253,24 +257,19 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shiny::tags$div(
             id = "mean_panel_edit",
-            shiny::tags$h2("Mean", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("mean_table_edit")
           )
+        )
         ),
         shinyjs::hidden(
           shiny::tags$div(
             id = "vcov_panel_edit",
-            shiny::tags$h2("VCov", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("vcov_table_edit")
           )
         ),
         shinyjs::hidden(
           shiny::tags$div(
             id = "beta_panel_edit",
-            shiny::tags$h2("Beta", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
             DT::DTOutput("beta_table_edit")
 
           )
