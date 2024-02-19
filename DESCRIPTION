@@ -1,0 +1,26 @@
+Package: shinySim
+Title: shiny interface to the squidSim package
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Ed", "Ivimey-Cook", , "e.ivimeycook@gmail.com", role = c("aut", "cre")),
+    person("Joel", "Pick", , "joel.l.pick@gmail.com", role = "aut")
+  )
+Description: A shiny Gui interface to the squidSim package.
+License: MIT + file LICENSE
+BugReports: https://github.com/squidgroup/shinySim/issues
+Imports:
+    bslib,
+    dplyr,
+    DT,
+    shiny,
+    shinyalert,
+    shinyjs,
+    shinyWidgets,
+    stats,
+    stringr,
+    tippy,
+    utils,
+    grDevices
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
