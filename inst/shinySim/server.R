@@ -37,9 +37,9 @@ server <- function(input, output, session){
 
   #importing datas structure
   shiny::observe({
-     if(nrow(data.struc) > 0 ){
+     if(data.struc != "Missing" ){
        group_list$x <- get(x = "data.struc", envir = globalenv())
-       # print(colnames(group_list$x))
+       print(data.struc)
     } else
     group_list$x <- NULL
   })
@@ -47,7 +47,7 @@ server <- function(input, output, session){
   #update inputgroup with column headers(wrap in observe event after)
   shiny::observe({
 
-    if(nrow(data.struc) > 0 ){
+    if(data.struc != "Missing"){
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "input_group",
