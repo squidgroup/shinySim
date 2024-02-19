@@ -191,13 +191,13 @@ shiny::observeEvent(input$input_group, {
           name_tab$x,
           selection = 'none',
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "Name",
           callback = DT::JS(js),
           editable = list(target = "cell"),
           options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100,
                          rowCallback = DT::JS(
                            'function(row, data) {',
-                           '$("td", row).css("height", "20px");', # Set row height
+                           '$("td", row).css("height", "24px");', # Set row height
                            '}'
                          )),
         ) |> DT::formatStyle(1,`text-align` = 'left') |>
@@ -212,7 +212,7 @@ shiny::observeEvent(input$input_group, {
         DT::datatable(
           mean_tab$x,
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "Mean",
           callback = DT::JS(js),
           editable = list(target = "cell"),
           selection = 'none',
@@ -227,7 +227,7 @@ shiny::observeEvent(input$input_group, {
           editable = list(target = "cell"),
           selection = 'none',
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "Beta",
           callback = DT::JS(js),
           options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
           ) |> DT::formatStyle(1,`text-align` = 'left')
@@ -238,7 +238,7 @@ shiny::observeEvent(input$input_group, {
           vcov_tab$x,
           selection = 'none',
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "VCov",
           callback = DT::JS(js),
           editable = list(target = "cell"),
           options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
@@ -499,7 +499,7 @@ shiny::observeEvent(input$input_group, {
           editable = list(target = "cell"),
           selection = 'none',
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "Beta",
           callback = DT::JS(js),
           options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
           ) |> DT::formatStyle(1,`text-align` = 'left')
@@ -510,7 +510,7 @@ shiny::observeEvent(input$input_group, {
           vcov_tab$edit,
           selection = 'none',
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "VCov",
           callback = DT::JS(js),
           editable = list(target = "cell"),
           options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
@@ -522,13 +522,13 @@ shiny::observeEvent(input$input_group, {
           name_tab$edit,
           selection = 'none',
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "Name",
           callback = DT::JS(js),
           editable = list(target = "cell"),
           options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100,
                          rowCallback = DT::JS(
                            'function(row, data) {',
-                           '$("td", row).css("height", "20px");', # Set row height
+                           '$("td", row).css("height", "24px");', # Set row height
                            '}'
                          ))
         ) |> DT::formatStyle(1,`text-align` = 'left') |>
@@ -539,7 +539,7 @@ shiny::observeEvent(input$input_group, {
         DT::datatable(
           mean_tab$edit,
           rownames = FALSE,
-          colnames = NULL,
+          colnames = "Mean",
           callback = DT::JS(js),
           editable = list(target = "cell"),
           selection = 'none',
