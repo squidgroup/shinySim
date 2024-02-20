@@ -357,20 +357,24 @@ bs4Dash::dashboardPage(
           width = NULL,
           elevation = 3,
           collapsible = FALSE,
-          title = "Variance",
-          column(width = 3,
-           shiny::uiOutput("output_variance")
-          ),
-          column(width = 3,
-                 shiny::tableOutput("output_variance_mid_tab"),
-                 shiny::plotOutput("output_variance_mid_plot")
-          ),
-          column(width = 3,
-                 shiny::tableOutput("output_variance_right_tab"),
-                 shiny::plotOutput("output_variance_right_plot")
-          )
-        )
-      ),
+          title = "Variance Decomposition",
+          "Contribution of the simulated predictors to the mean and variance in the response",br(),br(),
+          fluidRow(
+                    column(width = 4,
+                     shiny::uiOutput("output_variance")
+                    ),
+                    column(width = 4,
+                      "Contribution of different hierarchical levels to grand mean and variance:",br(),br(),
+                      shiny::tableOutput("output_variance_mid_tab"),
+                      shiny::plotOutput("output_variance_mid_plot")
+                    ),
+                    column(width = 4,
+                      "Contribution of different predictors to grand mean and variance:",br(),br(),
+                      shiny::tableOutput("output_variance_right_tab"),
+                      shiny::plotOutput("output_variance_right_plot")
+                    )
+                  )
+                )),
       bs4Dash::column(
         width = 3,
         # variance output

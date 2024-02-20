@@ -7,7 +7,7 @@ server <- function(input, output, session){
     x = data.frame(component=c("intercept","residual"),group=c("intercept","residual")))
 
   # list of group names form the data frame
-  group_list <- shiny::reactiveValues(x = NULL)
+  # group_list <- shiny::reactiveValues(x = NULL)
 
   all_names <- shiny::reactiveValues(x = c("residual"))
 
@@ -35,29 +35,29 @@ server <- function(input, output, session){
 
   # print(reactiveValuesToList(param_list))
 
-  #importing datas structure
-  shiny::observe({
-     if(data.struc != "Missing" ){
-       group_list$x <- get(x = "data.struc", envir = globalenv())
-       print(data.struc)
-    } else
-    group_list$x <- NULL
-  })
+  # #importing datas structure
+  # shiny::observe({
+  #    if(data.struc != "Missing" ){
+  #      group_list$x <- get(x = "data.struc", envir = globalenv())
+  #      print(data.struc)
+  #   } else
+  #   group_list$x <- NULL
+  # })
 
   #update inputgroup with column headers(wrap in observe event after)
   shiny::observe({
 
-    if(data.struc != "Missing"){
+    # if(data.struc != "Missing"){
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "input_group",
-        choices = c(colnames(group_list$x), "observation", "interactions")
+        choices = c(colnames(data.struc), "observation", "interactions")
       )
-    } else(shinyWidgets::updatePickerInput(
-      session = session,
-      inputId = "input_group",
-      choices = c("observation", "interactions")
-    ))
+    # } else(shinyWidgets::updatePickerInput(
+    #   session = session,
+    #   inputId = "input_group",
+    #   choices = c("observation", "interactions")
+    # ))
   })
 
 
@@ -137,7 +137,7 @@ shiny::observeEvent(input$input_group, {
         hide=c("input_variable_no","mean_panel", "vcov_panel")
       )
 
-      num_level<-length(unique(group_list$x[[input$input_group]]))
+      num_level<-length(unique(data.struc[[input$input_group]]))
       if(num_level>1){
         shiny::updateNumericInput(
           session = session,
@@ -171,7 +171,7 @@ shiny::observeEvent(input$input_group, {
       num_rows <- input$input_variable_no
 
       name_tab$x <- data.frame(Name = if(input$component_type=="fixed categorical"){
-        as.character(unique(group_list$x[[input$input_group]]))
+        as.character(unique(data.struc[[input$input_group]]))
       }else{
         rep("", num_rows)
       })
@@ -807,7 +807,10 @@ shiny::observeEvent(input$input_group, {
   })
 
   output$output_variance<- renderText({
-    var_list$x
+  paste(
+    "Grand Mean:",var_list$x$total["mean"],"<br/>",
+    "Grand Variance:",var_list$x$total["var"])
+    # var_list$x
   # paste(
   #   "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
   #   "Simulated Mean:",var_list$x$total["mean"],"<br/>",
@@ -820,6 +823,12 @@ shiny::observeEvent(input$input_group, {
   # )
 
   })
+
+  output$output_variance_mid_tab<- shiny::renderTable(var_list$x$groups,rownames = TRUE)
+
+  output$output_variance_right_tab<- shiny::renderTable(var_list$x$variables,rownames = TRUE)
+  
+
 
   #praising action button + logo leads to citations
   shiny::observeEvent(input$citeme, {

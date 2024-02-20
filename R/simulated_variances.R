@@ -73,28 +73,28 @@ make_big_matrix<-function(x){
 #' @return A list with means and variance at each level
 #' @examples
 #' \dontrun{
-#' squid_data <- simulate_population(
-#' data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
-#'	parameters=list(
-#'    individual=list(
-#'  		vcov=1.2
-#'  	),
-#'  	observation=list(
-#'      names=c("temperature","rainfall", "wind"),
-#'      mean = c(10,1 ,20),
-#'      vcov =matrix(c(
-#'        1, 0, 1,
-#'        0,0.1,0,
-#'        1, 0, 2
-#'        ), nrow=3 ,ncol=3),
-#'      beta =c(0.5,-3,0.4)
-#'    ),
-#'    residual=list(
-#'      mean=10,
-#'      vcov=1
-#'    )
-#'  )
-#')
+# ' squid_data <- simulate_population(
+# ' data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
+# '	parameters=list(
+# '    individual=list(
+# '  		vcov=1.2
+# '  	),
+# '  	observation=list(
+# '      names=c("temperature","rainfall", "wind"),
+# '      mean = c(10,1 ,20),
+# '      vcov =matrix(c(
+# '        1, 0, 1,
+# '        0,0.1,0,
+# '        1, 0, 2
+# '        ), nrow=3 ,ncol=3),
+# '      beta =c(0.5,-3,0.4)
+# '    ),
+# '    residual=list(
+# '      mean=10,
+# '      vcov=1
+# '    )
+# '  )
+# ')
 #' 
 #' simulated_variance(squid_data)
 #' }
@@ -114,7 +114,7 @@ simulated_variance <- function(parameters,data_structure){
 
 	#makes sure all the components have the right names
 	for(i in 1:length(param)){
-		names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- param[[i]]$names
+		names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- rownames(param[[i]]$beta) <- param[[i]]$names
 	}
 
 	p_names <- names(param)[names(param)!="interactions"]
@@ -208,16 +208,56 @@ simulated_variance <- function(parameters,data_structure){
 	)
 	# print("done summaries")
 	# class(out) <- "squid_var"
-	# return(out)
+	return(out)
 
-	  paste(
-    "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
-    "Simulated Mean:",out$total["mean"],"<br/>",
-    "Simulated Variance:",out$total["var"],"<br/><br/>",
-    "Contribution of different hierarchical levels to grand mean and variance:<br/>",
-    paste(rownames(out$groups[-1,]),out$groups[-1,"var"],sep=": ", collapse="<br/>"),
-    "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
-    paste(rownames(out$variables[-1,]),out$variables[-1,"var"],sep=": ", collapse="<br/>")
 
-  )
 }
+
+
+
+# squid_data <- simulate_population(
+# data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
+#   parameters=list(
+#     individual=list(
+#  	  vcov=1.2
+#  	),
+#  	observation=list(
+#      names=c("temperature","rainfall", "wind"),
+#      mean = c(10,1 ,20),
+#      vcov =matrix(c(
+#        1, 0, 1,
+#        0,0.1,0,
+#        1, 0, 2
+#        ), nrow=3 ,ncol=3),
+#      beta =c(0.5,-3,0.4)
+#    ),
+#    residual=list(
+#      mean=10,
+#      vcov=1
+#    )
+#  )
+# )
+
+# out<-simulated_variance(squid_data$param)
+
+# simulated_variance(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)))
+
+#     paste(
+#     "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
+#     "Simulated Mean:",out$total["mean"],"<br/>",
+#     "Simulated Variance:",out$total["var"],"<br/><br/>",
+#     "Contribution of different hierarchical levels to grand mean and variance:<br/>",
+#     paste(rownames(out$groups[-1,]),out$groups[-1,"var"],sep=": ", collapse="<br/>"),
+#     "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
+#     paste(rownames(out$variables[-1,]),out$variables[-1,"var"],sep=": ", collapse="<br/>")
+
+#   )
+
+# devtools::install("/Users/joelpick/github/shinySim")
+# library(shinySim)
+# data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
+# shinySim(data.struc = data_test)
+
+#devtools::install_github("squidgroup/shinySim")
+
+# devtools::check("/Users/joelpick/github/shinySim")
