@@ -3,6 +3,7 @@
 ui <- function(){
   ####### SETUP the Dashboard######
 bs4Dash::dashboardPage(
+  dark = NULL,
   help = NULL,
   # theme settings
   freshTheme = fresh::create_theme(
@@ -13,18 +14,12 @@ bs4Dash::dashboardPage(
     ),
     fresh::bs4dash_layout(
       main_bg = "white",
-      sidebar_width = "475px"
+      sidebar_width = "350px"
     ),
     fresh::bs4dash_sidebar_light(
       bg = "white",
       hover_bg = "lightblue",
       submenu_bg = "lightblue",
-    ),
-    fresh::bs4dash_sidebar_dark(
-      bg = "black",
-      submenu_bg = "white",
-      submenu_color = "white",
-      active_color = "black"
     ),
     fresh::bs4dash_status(
       primary = "#5E81AC",
@@ -39,7 +34,7 @@ bs4Dash::dashboardPage(
     fixed = TRUE,
     shiny::actionButton(
       inputId = "citeme",
-      style = "position: absolute; right: 80px; background-color: #5E81AC; border-color: #5E81AC;",
+      style = "position: absolute; right: 0px; background-color: #5E81AC; border-color: #5E81AC;",
       label = shiny::tags$img(src = "squidSim_logo.png", height = "25px", width = "20px")
     ),
     # add some shinysim details
@@ -108,7 +103,14 @@ bs4Dash::dashboardPage(
         shiny::splitLayout(
         shinyWidgets::pickerInput(
           inputId = "input_group",
-          label = shiny::tags$span(style = "color: black;", "Select a group"),
+          label = shiny::tags$span(
+            style = "color: black;",
+            "Select Group",
+            shiny::tags$span(
+              style = "color: red;",
+              "*"
+            )
+          ),
           selected = NULL,
           choices = c("observation", "interactions"),
           options = list(
@@ -119,7 +121,7 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shiny::textInput("input_component_name",
                            value = "",
-                           label = shiny::tags$span(style = "color: grey;", "Component Name (optional)")
+                           label = shiny::tags$span(style = "color: grey;", "Component Name")
           )
         )
         ),
@@ -128,13 +130,20 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shinyWidgets::pickerInput(
             inputId = "component_type",
-            label = shiny::tags$span(style = "color: black;", "Component type"),
+            label = shiny::tags$span(
+              style = "color: black;",
+              "Component Type",
+              shiny::tags$span(
+                style = "color: red;",
+                "*"
+              )
+            ),
             choices = c(
               "predictor", "random", "fixed categorical",
               "covariate"
             ),
             options = list(
-              title = "Component type"
+              title = "Type"
             )
           )
         ),
@@ -142,7 +151,14 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shiny::numericInput(
             inputId = "input_variable_no",
-            label = shiny::tags$span(style = "color: black;", "Number of Variables"),
+            label = shiny::tags$span(
+              style = "color: black;",
+              "Variable No.",
+              shiny::tags$span(
+                style = "color: red;",
+                "*"
+              )
+            ),
             value = 1, min = 1, max = 10
           )
         )
@@ -157,8 +173,8 @@ bs4Dash::dashboardPage(
         ),
         shinyjs::hidden(
           shiny::tags$div(
-            id = "mean_panel",
-            DT::DTOutput("mean_table")
+            id = "beta_panel",
+            DT::DTOutput("beta_table")
           )
         )
         ),
@@ -191,8 +207,8 @@ bs4Dash::dashboardPage(
         ),
         shinyjs::hidden(
           shiny::tags$div(
-            id = "beta_panel",
-            DT::DTOutput("beta_table")
+            id = "mean_panel",
+            DT::DTOutput("mean_table")
           )
         ),
         shiny::tags$div(
@@ -239,7 +255,7 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shiny::numericInput(
             inputId = "input_variable_no_edit",
-            label = shiny::tags$span(style = "color: black;", "Number of Variables"),
+            label = shiny::tags$span(style = "color: black;", "Variable No."),
             value = 1, min = 1, max = 10
           )
         ),
@@ -256,8 +272,8 @@ bs4Dash::dashboardPage(
         # mean
         shinyjs::hidden(
           shiny::tags$div(
-            id = "mean_panel_edit",
-            DT::DTOutput("mean_table_edit")
+            id = "beta_panel_edit",
+            DT::DTOutput("beta_table_edit")
           )
         )
         ),
@@ -269,9 +285,8 @@ bs4Dash::dashboardPage(
         ),
         shinyjs::hidden(
           shiny::tags$div(
-            id = "beta_panel_edit",
-            DT::DTOutput("beta_table_edit")
-
+            id = "mean_panel_edit",
+            DT::DTOutput("mean_table_edit")
           )
         ),
         shinyjs::hidden(
