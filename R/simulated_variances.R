@@ -55,49 +55,6 @@ make_big_matrix<-function(x){
 	mat
 }
 
-#' @title simVar
-#' @description Calculate simulated mean and variance in response variable(s)
-#'
-#' @param parameters parameter list
-#' @param data_structure data structure
-#' @details 
-#' Calculates the simulated variance from the simulation parameters, as well as breaking down the source of this variance into the hierarchical levels given in the parameter list, and into individual predictors. This function has several limitations. 
-#' 1. Doesn't work when 'model' is specified in simulate_population()
-#' 2. Assumes grouping factors in the data_structure are balanced - unbalanced designs can change the observed variance
-#' 3. Will be inaccurate with transformed variables (i.e. if functions are specified)
-#' 4. Doesn't deal well with three way interactions and over, unless they are the same variable (i.e. polynomials)
-#' 5. Doesn't account for covariance between interaction terms, e.g. if there is are two interaction terms rain:temp and wind:temp, they will covary, but this additional variance in the response is not calculated
-#' @author Joel Pick - joel.l.pick@gmail.com
-#' @return A list with means and variance at each level
-#' @examples
-#' \dontrun{
-# ' squid_data <- simulate_population(
-# ' data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
-# '	parameters=list(
-# '    individual=list(
-# '  		vcov=1.2
-# '  	),
-# '  	observation=list(
-# '      names=c("temperature","rainfall", "wind"),
-# '      mean = c(10,1 ,20),
-# '      vcov =matrix(c(
-# '        1, 0, 1,
-# '        0,0.1,0,
-# '        1, 0, 2
-# '        ), nrow=3 ,ncol=3),
-# '      beta =c(0.5,-3,0.4)
-# '    ),
-# '    residual=list(
-# '      mean=10,
-# '      vcov=1
-# '    )
-# '  )
-# ')
-#' 
-#' simulated_variance(squid_data)
-#' }
-#' @keywords internal
-
 simVar <- function(parameters,data_structure){
 	
 	# order parameter names
