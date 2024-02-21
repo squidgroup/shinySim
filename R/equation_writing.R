@@ -72,6 +72,29 @@ manyToggle <- function(show=NULL,hide=NULL){
   #     DT::replaceData(proxy, ro$x, resetPaging = FALSE)
   # }
 
+#' @title order_components
+#' @description function to order component names
+#' @param components n/a
+#' @keywords internal
+#' @export
+order_components <- function(components){
+ 	c("intercept",components[! components %in% c("intercept","interactions","residual")],if("interactions" %in% components){"interactions"},"residual")
+}
+
+#' @title make_colors
+#' @description function to make color list to match components
+#' @param components n/a
+#' @keywords internal
+#' @export
+make_colors <- function(components){
+ 	colors <- rep(NA,length(components))
+	names(colors) <- components
+	colors[c("intercept","residual")] <- palette.colors()[1:2]
+	# colors["observation"] <- palette.colors()[3]
+	colors[!names(colors) %in% c("intercept","residual") ] <- palette.colors()[4:(3+sum(!names(colors)%in% c("intercept","residual") ))]
+	colors
+}
+
 
 #' @title make_equation
 #' @description make equation
@@ -79,27 +102,18 @@ manyToggle <- function(show=NULL,hide=NULL){
 #' @param print_colours do you wantt to print colors? 
 #' @keywords internal
 #' @export
+
 make_equation<-function(parameters, print_colours=TRUE){
 
-	components <- names(parameters)
-	
 	## reorder names
-	components <- 	c("intercept",components[! components %in% c("intercept","interactions","residual")],if("interactions" %in% components){"interactions"},"residual")
-
+	components <- order_components(names(parameters))
 
 	### make a colour for each component
-	colors <- rep(NA,length(components))
-	names(colors) <- components
-	colors[c("intercept","residual")] <- palette.colors()[1:2]
-	# colors["observation"] <- palette.colors()[3]
-	colors[!names(colors) %in% c("intercept","residual") ] <- 
-	palette.colors()[4:(3+sum(!names(colors)%in% c("intercept","residual") ))]
-
+	colors <- make_colors(components)
 
 	## give each component in the parameter list a component name and color
 	params<-lapply(components,function(x)c(parameters[[x]], component=x, color=as.character(colors[x])))
 	names(params)<-components
-
 
 	### make a letter for each component
 	added_comp <- components[! components %in% c("intercept","interactions")]

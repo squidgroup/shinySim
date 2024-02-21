@@ -4,7 +4,6 @@
 #' @param means n/a
 #' @param vcov n/a
 #' @keywords internal
-#' @export
 ## function to compute expected variance of the product of variables. if two variables are given, accounts for non-independence of variables (i.e. non-0 covariance), but for more than 3 assumes that they are independent (don't' think there is a generalisation for the produce of 3 or more dependent variables)
 prod_var <- function(means,vcov){
 	vars <- diag(vcov)
@@ -27,7 +26,6 @@ prod_var <- function(means,vcov){
 #' @param means n/a
 #' @param vcov n/a
 #' @keywords internal
-#' @export
 prod_means <- function(means,vcov){
 	##https://www.physicsforums.com/threads/expectations-on-the-product-of-two-dependent-random-variables.276125/
 	
@@ -42,7 +40,6 @@ prod_means <- function(means,vcov){
 #' @description produces a big matrix
 #' @param x n/a
 #' @keywords internal
-#' @export
 #makes a big matrix out of list of vcov matrices
 make_big_matrix<-function(x){
 	all_names <- c(sapply(x, function(i) colnames(i) ), recursive=TRUE)
@@ -58,10 +55,11 @@ make_big_matrix<-function(x){
 	mat
 }
 
-#' @title simulated_variance
+#' @title simVar
 #' @description Calculate simulated mean and variance in response variable(s)
 #'
-#' @param squid A squid object created with the simulate_population() function
+#' @param parameters parameter list
+#' @param data_structure data structure
 #' @details 
 #' Calculates the simulated variance from the simulation parameters, as well as breaking down the source of this variance into the hierarchical levels given in the parameter list, and into individual predictors. This function has several limitations. 
 #' 1. Doesn't work when 'model' is specified in simulate_population()
@@ -99,13 +97,18 @@ make_big_matrix<-function(x){
 #' simulated_variance(squid_data)
 #' }
 #' @keywords internal
-#' @export
 
-simulated_variance <- function(parameters,data_structure){
+simVar <- function(parameters,data_structure){
+	
+	# order parameter names
+	parameters <- parameters[order_components(names(parameters))]
+
+	### make a colour for each component
+	colors <- make_colors(names(parameters))
+
 	intercept <- parameters$intercept
 	param <- parameters[names(parameters)!="intercept"]
-	# 	components <- 	c("intercept",components[! components %in% c("intercept","interactions","residual")],if("interactions" %in% components){"interactions"},"residual")
-	
+
 	# known_predictors <- squid$known_predictors
 
 	# if(any(sapply(param, function(i) any(i$functions!="identity")))){
@@ -238,20 +241,11 @@ simulated_variance <- function(parameters,data_structure){
 #  )
 # )
 
-# out<-simulated_variance(squid_data$param)
-
+# out<-simVar(squid_data$param)
+# par(mar=c(0,3,0,0))
+# barplot(matrix(out$groups$var,dimnames=list(c(rownames(out$groups)))), beside = FALSE, col=make_colors(rownames(out$groups)))
 # simulated_variance(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)))
 
-#     paste(
-#     "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
-#     "Simulated Mean:",out$total["mean"],"<br/>",
-#     "Simulated Variance:",out$total["var"],"<br/><br/>",
-#     "Contribution of different hierarchical levels to grand mean and variance:<br/>",
-#     paste(rownames(out$groups[-1,]),out$groups[-1,"var"],sep=": ", collapse="<br/>"),
-#     "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
-#     paste(rownames(out$variables[-1,]),out$variables[-1,"var"],sep=": ", collapse="<br/>")
-
-#   )
 
 # devtools::install("/Users/joelpick/github/shinySim")
 # library(shinySim)
@@ -260,4 +254,4 @@ simulated_variance <- function(parameters,data_structure){
 
 #devtools::install_github("squidgroup/shinySim")
 
-# devtools::check("/Users/joelpick/github/shinySim")
+# devtools::document("/Users/joelpick/github/shinySim")

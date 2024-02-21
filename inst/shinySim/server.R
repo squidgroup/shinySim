@@ -6,9 +6,6 @@ server <- function(input, output, session){
   component_list <- shiny::reactiveValues(
     x = data.frame(component=c("intercept","residual"),group=c("intercept","residual")))
 
-  # list of group names form the data frame
-  # group_list <- shiny::reactiveValues(x = NULL)
-
   all_names <- shiny::reactiveValues(x = c("residual"))
 
   #table data
@@ -30,34 +27,18 @@ server <- function(input, output, session){
     x = make_equation(list(intercept = 0,residual = residual_start))
     )
   var_list <- shiny::reactiveValues(
-    x = simulated_variance(list(intercept = 0,residual = residual_start),data.struc)
+    x = simVar(list(intercept = 0,residual = residual_start),data.struc)
     )
-
-  # print(reactiveValuesToList(param_list))
-
-  # #importing datas structure
-  # shiny::observe({
-  #    if(data.struc != "Missing" ){
-  #      group_list$x <- get(x = "data.struc", envir = globalenv())
-  #      print(data.struc)
-  #   } else
-  #   group_list$x <- NULL
-  # })
 
   #update inputgroup with column headers(wrap in observe event after)
   shiny::observe({
 
-    # if(data.struc != "Missing"){
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "input_group",
         choices = c(colnames(data.struc), "observation", "interactions")
       )
-    # } else(shinyWidgets::updatePickerInput(
-    #   session = session,
-    #   inputId = "input_group",
-    #   choices = c("observation", "interactions")
-    # ))
+
   })
 
 
@@ -338,7 +319,7 @@ shiny::observeEvent(input$input_group, {
 
       print("2")
 
-      var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
+      var_list$x <- simVar(reactiveValuesToList(param_list),data.struc)
       print("3")
       ## restore everything
 
@@ -645,7 +626,7 @@ shiny::observeEvent(input$input_group, {
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
 
-      var_list$x <- simulated_variance(reactiveValuesToList(param_list),data.struc)
+      var_list$x <- simVar(reactiveValuesToList(param_list),data.struc)
 
       shinyjs::hide("component_type_edit")
       shinyjs::hide("input_variable_no_edit")
@@ -808,24 +789,14 @@ shiny::observeEvent(input$input_group, {
 
   output$output_variance<- renderText({
   paste(
-    "Grand Mean:",var_list$x$total["mean"],"<br/>",
+    "Grand Mean:",var_list$x$total["mean"],"&emsp;",
     "Grand Variance:",var_list$x$total["var"])
-    # var_list$x
-  # paste(
-  #   "Contribution of the simulated predictors to the mean and variance in the response<br/><br/>",
-  #   "Simulated Mean:",var_list$x$total["mean"],"<br/>",
-  #   "Simulated Variance:",var_list$x$total["var"],"<br/><br/>",
-  #   "Contribution of different hierarchical levels to grand mean and variance:<br/>",
-  #   paste(rownames(var_list$x$groups[-1,]),var_list$x$groups[-1,"var"],sep=": ", collapse="<br/>"),
-  #   "<br/><br/>Contribution of different predictors to grand mean and variance:<br/>",
-  #   paste(rownames(var_list$x$variables[-1,]),var_list$x$variables[-1,"var"],sep=": ", collapse="<br/>")
-
-  # )
-
   })
 
   output$output_variance_mid_tab<- shiny::renderTable(var_list$x$groups,rownames = TRUE)
-
+  output$output_variance_mid_plot<- shiny::renderPlot({
+    barplot(matrix(var_list$x$groups$var,dimnames=list(c(rownames(var_list$x$groups)))), beside = FALSE, col=make_colors(rownames(var_list$x$groups)),mar=c(0,3,0,0))
+  })
   output$output_variance_right_tab<- shiny::renderTable(var_list$x$variables,rownames = TRUE)
   
 
