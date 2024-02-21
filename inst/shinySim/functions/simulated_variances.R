@@ -136,7 +136,6 @@ simVar <- function(parameters,data_structure){
 	}
 	# print("done interactions")
 
-
 	means <- do.call(c,c(lapply(param, function(p) p$mean ), use.names=FALSE))
 	# print("done means")
 
@@ -146,7 +145,8 @@ simVar <- function(parameters,data_structure){
 	betas <- do.call(rbind,lapply(param, function(p) p$beta ))
 	# print("done betas")
 
-		
+	# comps <- 
+
 	out <- list( 
 		## total
 		total = c(
@@ -174,7 +174,7 @@ simVar <- function(parameters,data_structure){
 }
 
 
-
+library(squidSim)
 # squid_data <- simulate_population(
 # data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
 #   parameters=list(
@@ -201,13 +201,17 @@ simVar <- function(parameters,data_structure){
 # out<-simVar(squid_data$param)
 # par(mar=c(0,3,0,0))
 # barplot(matrix(out$groups$var,dimnames=list(c(rownames(out$groups)))), beside = FALSE, col=make_colors(rownames(out$groups)))
+
+# barplot(matrix(out$variables$var,dimnames=list(c(rownames(out$variables)))), beside = FALSE, col=make_colors(rownames(out$variables)))
+
+
 # simulated_variance(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)))
 
 
-# devtools::install("/Users/joelpick/github/shinySim")
-# library(shinySim)
-# data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
-# shinySim(data.struc = data_test)
+devtools::install("/Users/joelpick/github/shinySim")
+library(shinySim)
+data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
+shinySim(data.struc = data_test)
 
 #devtools::install_github("squidgroup/shinySim")
 

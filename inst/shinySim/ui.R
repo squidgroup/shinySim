@@ -164,45 +164,49 @@ bs4Dash::dashboardPage(
         )
         ),
         # ADD tables
-        shiny::splitLayout(
-        shinyjs::hidden(
-          shiny::tags$div(
-            id = "name_panel",
-            DT::DTOutput("name_table")
+        shiny::fluidRow(
+        # shiny::splitLayout(
+        column(width = 6,
+          shinyjs::hidden(
+            shiny::tags$div(
+              id = "name_panel",
+              DT::DTOutput("name_table")
+            )
+          ),
+          shinyjs::hidden(
+            shiny::tags$div(
+              id = "interaction_panel",
+              shiny::tags$h2("Interaction variables", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
+                margin-top: 0; padding: 0;"),
+              shinyWidgets::pickerInput(
+                inputId = "int_var1",
+                choices = c(""),
+                options = list(
+                  title = "Variable 1"
+                )
+              ),
+              shinyWidgets::pickerInput(
+                inputId = "int_var2",
+                choices = c(""),
+                options = list(
+                  title = "Variable 2"
+                )
+              )
+            )
           )
         ),
+        column(width = 6,
         shinyjs::hidden(
           shiny::tags$div(
             id = "beta_panel",
             DT::DTOutput("beta_table")
           )
-        )
+        ))
         ),
         shinyjs::hidden(
           shiny::tags$div(
             id = "vcov_panel",
             DT::DTOutput("vcov_table")
-          )
-        ),
-        shinyjs::hidden(
-          shiny::tags$div(
-            id = "interaction_panel",
-            shiny::tags$h2("Interaction variables", style = "text-align: left; color: black; font-size: small; font-weight: bold; margin-bottom: 0;
-              margin-top: 0; padding: 0;"),
-            shinyWidgets::pickerInput(
-              inputId = "int_var1",
-              choices = c(""),
-              options = list(
-                title = "Variable 1"
-              )
-            ),
-            shinyWidgets::pickerInput(
-              inputId = "int_var2",
-              choices = c(""),
-              options = list(
-                title = "Variable 2"
-              )
-            )
           )
         ),
         shinyjs::hidden(
@@ -379,8 +383,9 @@ bs4Dash::dashboardPage(
           closable = FALSE,
           maximizable = TRUE,
           title = "Variance Decomposition",
-          "Contribution of the simulated predictors to the mean and variance in the response",br(),br(),
+          # "Contribution of the simulated predictors to the mean and variance in the response",br(),br(),
           shiny::uiOutput("output_variance"),
+          br(),
           fluidRow(
             column(width = 6,
               "Contribution of different hierarchical levels:",br(),br(),
