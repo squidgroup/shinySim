@@ -58,14 +58,18 @@ make_big_matrix<-function(x){
 simVar <- function(parameters,data_structure){
 	
 	# order parameter names
-	parameters <- parameters[order_components(names(parameters))]
+	components <- order_components(names(parameters))
 
 	### make a colour for each component
-	colors <- make_colors(names(parameters))
+	colors <- make_colors(components)
 
 	intercept <- parameters$intercept
-	param <- parameters[names(parameters)!="intercept"]
 
+	param<-lapply(components[components!="intercept"],function(x)c(parameters[[x]], component=x, color=as.character(colors[x])))
+	names(param)<-components[components!="intercept"]
+	
+
+	
 	# known_predictors <- squid$known_predictors
 
 	# if(any(sapply(param, function(i) any(i$functions!="identity")))){
@@ -145,8 +149,6 @@ simVar <- function(parameters,data_structure){
 	betas <- do.call(rbind,lapply(param, function(p) p$beta ))
 	# print("done betas")
 
-	# comps <- 
-
 	out <- list( 
 		## total
 		total = c(
@@ -162,7 +164,8 @@ simVar <- function(parameters,data_structure){
 	
 		variables = data.frame(
 			mean = rbind(intercept=intercept,betas * means),
-			var = rbind(intercept=0,betas * covs %*% betas)
+			var = rbind(intercept=0,betas * covs %*% betas),
+			names = c("intercept",do.call(rbind,lapply(param, function(p) cbind(p$names,p$component)))[,2])
 		)
 	 	
 	)
@@ -174,36 +177,36 @@ simVar <- function(parameters,data_structure){
 }
 
 
-library(squidSim)
-# squid_data <- simulate_population(
-# data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
-#   parameters=list(
-#     individual=list(
-#  	  vcov=1.2
-#  	),
-#  	observation=list(
-#      names=c("temperature","rainfall", "wind"),
-#      mean = c(10,1 ,20),
-#      vcov =matrix(c(
-#        1, 0, 1,
-#        0,0.1,0,
-#        1, 0, 2
-#        ), nrow=3 ,ncol=3),
-#      beta =c(0.5,-3,0.4)
-#    ),
-#    residual=list(
-#      mean=10,
-#      vcov=1
-#    )
-#  )
-# )
+# library(squidSim)
+squid_data <- simulate_population(
+data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
+  parameters=list(
+    individual=list(
+ 	  vcov=1.2
+ 	),
+ 	observation=list(
+     names=c("temperature","rainfall", "wind"),
+     mean = c(10,1 ,20),
+     vcov =matrix(c(
+       1, 0, 1,
+       0,0.1,0,
+       1, 0, 2
+       ), nrow=3 ,ncol=3),
+     beta =c(0.5,-3,0.4)
+   ),
+   residual=list(
+     mean=10,
+     vcov=1
+   )
+ )
+)
 
+# colors <- make_colors(rownames(out$groups))
 # out<-simVar(squid_data$param)
 # par(mar=c(0,3,0,0))
-# barplot(matrix(out$groups$var,dimnames=list(c(rownames(out$groups)))), beside = FALSE, col=make_colors(rownames(out$groups)))
+# barplot(matrix(out$groups$var,dimnames=list(c(rownames(out$groups)))), beside = FALSE, col=colors)
 
-# barplot(matrix(out$variables$var,dimnames=list(c(rownames(out$variables)))), beside = FALSE, col=make_colors(rownames(out$variables)))
-
+# barplot(matrix(out$variables$var,dimnames=list(c(rownames(out$variables)))), beside = FALSE, col=colors[out$variables[,3]])
 
 # simulated_variance(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)))
 

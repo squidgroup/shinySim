@@ -796,11 +796,11 @@ shiny::observeEvent(input$input_group, {
     barplot(matrix(var_list$x$groups$var,dimnames=list(c(rownames(var_list$x$groups)))), beside = FALSE, col=make_colors(rownames(var_list$x$groups)))
   })
 
-  output$output_variance_right_tab<- shiny::renderTable(var_list$x$variables,rownames = TRUE)
+  output$output_variance_right_tab<- shiny::renderTable(var_list$x$variables[,1:2],rownames = TRUE)
   
   output$output_variance_right_plot<- shiny::renderPlot({
     par(mar=c(1,2,1,0.5),bg=NA)
-    barplot(matrix(var_list$x$variables$var,dimnames=list(c(rownames(var_list$x$variables)))), beside = FALSE, col=make_colors(rownames(var_list$x$variables)))
+    barplot(matrix(var_list$x$variables$var,dimnames=list(c(rownames(var_list$x$variables)))), beside = FALSE, col=make_colors(rownames(var_list$x$groups))[var_list$x$variables[,3]])
   })
 
 
