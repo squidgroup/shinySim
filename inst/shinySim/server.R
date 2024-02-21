@@ -175,12 +175,24 @@ shiny::observeEvent(input$input_group, {
           colnames = "Name",
           callback = DT::JS(js),
           editable = list(target = "cell"),
-          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100,
-                         rowCallback = DT::JS(
-                           'function(row, data) {',
-                           '$("td", row).css("height", "24px");', # Set row height
-                           '}'
-                         )),
+          options = list(
+            scrollX = TRUE,
+            autoWidth = FALSE,
+            lengthChange = TRUE,
+            dom = "t",
+            ordering = FALSE,
+            pageLength = 100,
+            rowCallback = DT::JS(
+              'function(row, data) {',
+              '$(row).attr("height", "50px");',
+              '$("td", row).css("height", "24px");',
+              '$("td", row).on("input", function() {',
+              '  var emptyCellHeight = $(this).closest("table").find("td:empty").height();', 
+              '  $(this).css("height", emptyCellHeight + "px");', 
+              '});',
+              '}'
+            )
+          )
         ) |> DT::formatStyle(1,`text-align` = 'left') |>
           DT::formatStyle(names(name_tab$x), lineHeight = '30px')
       )
@@ -210,7 +222,18 @@ shiny::observeEvent(input$input_group, {
           rownames = FALSE,
           colnames = "Beta",
           callback = DT::JS(js),
-          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
+          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100,
+                         rowCallback = DT::JS(
+                           'function(row, data) {',
+                           '$(row).attr("height", "50px");',
+                           '$("td", row).css("height", "24px");',
+                           '$("td", row).on("input", function() {',
+                           '  var emptyCellHeight = $(this).closest("table").find("td:empty").height();', 
+                           '  $(this).css("height", emptyCellHeight + "px");', 
+                           '});',
+                           '}'
+                         )
+          )
           ) |> DT::formatStyle(1,`text-align` = 'left')
       )
 
@@ -222,7 +245,16 @@ shiny::observeEvent(input$input_group, {
           colnames = "VCov",
           callback = DT::JS(js),
           editable = list(target = "cell"),
-          options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F,pageLength = 100)
+          options = list(
+            scrollX = TRUE,
+            autoWidth = FALSE,
+            lengthChange = TRUE,
+            dom = "t",
+            ordering = FALSE,
+            pageLength = 100,
+            columnDefs = list(list(
+              width = paste0(100 / input$input_variable_no, "px"), targets = "_all" 
+            )))
         ) |> DT::formatStyle(1:nrow(vcov_tab$x),`text-align` = 'left')
       )
 
