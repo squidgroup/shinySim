@@ -208,10 +208,10 @@ library(squidSim)
 # simulated_variance(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)))
 
 
-devtools::install("/Users/joelpick/github/shinySim")
-library(shinySim)
-data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
-shinySim(data.struc = data_test)
+# devtools::install("/Users/joelpick/github/shinySim")
+# library(shinySim)
+# data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
+# shinySim(data.struc = data_test)
 
 #devtools::install_github("squidgroup/shinySim")
 
