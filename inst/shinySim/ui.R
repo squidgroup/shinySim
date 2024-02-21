@@ -345,8 +345,10 @@ bs4Dash::dashboardPage(
           status = "primary",
           background = "danger",
           solidHeader = TRUE,
+          collapsible = TRUE,
+          collapsed = FALSE,
           closable = FALSE,
-          collapsible = FALSE,
+          maximizable = TRUE,
           elevation = 3,
           title = "Simulation Components",
           shiny::uiOutput("output_component")
@@ -354,24 +356,28 @@ bs4Dash::dashboardPage(
         ## equation output
         bs4Dash::box(
           width = NULL,
-          closable = FALSE,
           status = "primary",
           background = "danger",
           solidHeader = TRUE,
           elevation = 3,
-          collapsible = FALSE,
+          collapsible = TRUE,
+          collapsed = FALSE,
+          closable = FALSE,
+          maximizable = TRUE,
           title = "Simulation Equation",
           shiny::uiOutput("output_equation")
         ),
         ## code output
         bs4Dash::box(
           status = "primary",
-          solidHeader = TRUE,
-          closable = FALSE,
           background = "danger",
           width = NULL,
           elevation = 3,
-          collapsible = FALSE,
+          solidHeader = TRUE,
+          collapsible = TRUE,
+          collapsed = FALSE,
+          closable = FALSE,
+          maximizable = TRUE,
           title = "Variance Decomposition",
           "Contribution of the simulated predictors to the mean and variance in the response",br(),br(),
           shiny::uiOutput("output_variance"),
@@ -397,11 +403,13 @@ bs4Dash::dashboardPage(
         bs4Dash::box(
           elevation = 3,
           width = NULL,
-          closable = FALSE,
           status = "primary",
           background = "danger",
           solidHeader = TRUE,
-          collapsible = FALSE,
+          collapsible = TRUE,
+          collapsed = FALSE,
+          closable = FALSE,
+          maximizable = TRUE,
           title = "Simulation Code",
           shiny::uiOutput("output_code")
         )
