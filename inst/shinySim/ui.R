@@ -101,6 +101,7 @@ bs4Dash::dashboardPage(
         title = "Add",
         # inputgroup
         shiny::splitLayout(
+          shiny::tags$div(style = "text-align: center;",
         shinyWidgets::pickerInput(
           inputId = "input_group",
           label = shiny::tags$span(
@@ -116,17 +117,21 @@ bs4Dash::dashboardPage(
           options = list(
             title = "Group"
           )
+        )
         ),
         # hidden group name
+        shiny::tags$div(style = "text-align: center;",
         shinyjs::hidden(
           shiny::textInput("input_component_name",
                            value = "",
                            label = shiny::tags$span(style = "color: grey;", "Component Name")
           )
         )
+        )
         ),
         # hidden input component
         shiny::splitLayout(
+          shiny::tags$div(style = "text-align: center;",
         shinyjs::hidden(
           shinyWidgets::pickerInput(
             inputId = "component_type",
@@ -146,8 +151,10 @@ bs4Dash::dashboardPage(
               title = "Type"
             )
           )
+        )
         ),
         # variable number
+        shiny::tags$div(style = "text-align: center;",
         shinyjs::hidden(
           shiny::numericInput(
             inputId = "input_variable_no",
@@ -161,6 +168,7 @@ bs4Dash::dashboardPage(
             ),
             value = 1, min = 1, max = 10
           )
+        )
         )
         ),
         # ADD tables
@@ -229,6 +237,7 @@ bs4Dash::dashboardPage(
       shiny::tabPanel(
         title = "Update",
         # pickerinput
+        shiny::tags$div(style = "text-align: center;",
         shinyWidgets::pickerInput(
           inputId = "choose_component",
           label = shiny::tags$span(style = "color: black;", "Select Component"),
@@ -237,6 +246,7 @@ bs4Dash::dashboardPage(
           options = list(
             title = "Component"
           )
+        )
         ),
 
         # hidden input component
@@ -256,12 +266,14 @@ bs4Dash::dashboardPage(
         ),
 
         # variable number
+        shiny::tags$div(style = "text-align: center;",
         shinyjs::hidden(
           shiny::numericInput(
             inputId = "input_variable_no_edit",
             label = shiny::tags$span(style = "color: black;", "Variable No."),
             value = 1, min = 1, max = 10
           )
+        )
         ),
 
         # tables#
@@ -293,12 +305,14 @@ bs4Dash::dashboardPage(
             DT::DTOutput("mean_table_edit")
           )
         ),
+        shiny::tags$div(style = "text-align: center;",
         shinyjs::hidden(
           shiny::numericInput(
             inputId = "intercept_panel",
             label = shiny::tags$span(style = "color: black;", "Intercept"),
             value = 0
           )
+        )
         ),
         # covcorr radio
         #   shinyWidgets::radioGroupButtons(
