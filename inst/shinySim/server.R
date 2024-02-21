@@ -307,20 +307,16 @@ shiny::observeEvent(input$input_group, {
         param_list[[comp_name]]$covariate <- input$component_type == "covariate"
         v_names2 <- param_list[[comp_name]]$names
         all_names$x <- c(all_names$x ,v_names2)
-        print(all_names$x)
+        # print(all_names$x)
       }
 
       # print(reactiveValuesToList(param_list))
 
-      print("1")
-
       ## update equation
       output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
 
-      print("2")
-
       var_list$x <- simVar(reactiveValuesToList(param_list),data.struc)
-      print("3")
+
       ## restore everything
 
       manyToggle(hide=c("component_type", "input_variable_no", "name_panel", "mean_panel", "vcov_panel", "beta_panel"))
@@ -794,11 +790,18 @@ shiny::observeEvent(input$input_group, {
   })
 
   output$output_variance_mid_tab<- shiny::renderTable(var_list$x$groups,rownames = TRUE)
+
   output$output_variance_mid_plot<- shiny::renderPlot({
-    barplot(matrix(var_list$x$groups$var,dimnames=list(c(rownames(var_list$x$groups)))), beside = FALSE, col=make_colors(rownames(var_list$x$groups)),mar=c(0,3,0,0))
+    par(mar=c(1,2,1,0.5),bg=NA)
+    barplot(matrix(var_list$x$groups$var,dimnames=list(c(rownames(var_list$x$groups)))), beside = FALSE, col=make_colors(rownames(var_list$x$groups)))
   })
+
   output$output_variance_right_tab<- shiny::renderTable(var_list$x$variables,rownames = TRUE)
   
+  output$output_variance_right_plot<- shiny::renderPlot({
+    par(mar=c(1,2,1,0.5),bg=NA)
+    barplot(matrix(var_list$x$variables$var,dimnames=list(c(rownames(var_list$x$variables)))), beside = FALSE, col=make_colors(rownames(var_list$x$variables)))
+  })
 
 
   #praising action button + logo leads to citations

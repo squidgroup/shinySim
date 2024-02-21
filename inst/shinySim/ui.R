@@ -380,14 +380,14 @@ bs4Dash::dashboardPage(
               "Contribution of different hierarchical levels:",br(),br(),
               splitLayout(cellWidths = c("75%","25%"),
                 shiny::tableOutput("output_variance_mid_tab"),
-                shiny::plotOutput("output_variance_mid_plot")
+                shiny::plotOutput("output_variance_mid_plot", height = "200px")
               )
             ),
             column(width = 6,
               "Contribution of different predictors:",br(),br(),
             splitLayout(cellWidths = c("75%","25%"),
               shiny::tableOutput("output_variance_right_tab"),
-              shiny::plotOutput("output_variance_right_plot")
+              shiny::plotOutput("output_variance_right_plot", height = "200px")
             ))
           )
         )),
