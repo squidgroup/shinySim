@@ -507,6 +507,7 @@ shiny::observeEvent(input$input_group, {
         show="intercept_panel",
         hide=c( "input_variable_no_edit", "name_panel_edit", "beta_panel_edit","mean_panel_edit", "vcov_panel_edit")
       )
+      shinyjs::disable("delete_parameters")
     }
 
 
@@ -515,6 +516,7 @@ shiny::observeEvent(input$input_group, {
         show=c("vcov_panel_edit", "beta_panel_edit"),
         hide=c( "input_variable_no_edit", "name_panel_edit","mean_panel_edit", "intercept_panel")
       )
+      shinyjs::disable("delete_parameters")
     }
 
     if(!input$choose_component %in% c("","intercept")){
@@ -965,4 +967,13 @@ shiny::observeEvent(input$input_group, {
       imageWidth = "80"
     )
   })
+  
+  #delete data
+  
+  shiny::observeEvent(input$delete_parameters, {
+    dataset_name <- input$choose_component
+    datasets[[dataset_name]] <- NULL
+  })
 }
+
+

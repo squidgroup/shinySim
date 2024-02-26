@@ -337,6 +337,15 @@ bs4Dash::dashboardPage(
             label = "Update",
             style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
           )
+        ),
+        shiny::br(),
+        shiny::tags$div(
+          style = "display: flex; justify-content: center;",
+          shiny::actionButton(
+            "delete_parameters",
+            label = "Delete",
+            style = "color: #ffffff; background-color: #ff0000; border-color: #ff0000"
+          )
         )
       )
     )
