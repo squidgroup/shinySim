@@ -178,28 +178,28 @@ simVar <- function(parameters,data_structure){
 
 
 # library(squidSim)
-squid_data <- simulate_population(
-data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
-  parameters=list(
-    individual=list(
- 	  vcov=1.2
- 	),
- 	observation=list(
-     names=c("temperature","rainfall", "wind"),
-     mean = c(10,1 ,20),
-     vcov =matrix(c(
-       1, 0, 1,
-       0,0.1,0,
-       1, 0, 2
-       ), nrow=3 ,ncol=3),
-     beta =c(0.5,-3,0.4)
-   ),
-   residual=list(
-     mean=10,
-     vcov=1
-   )
- )
-)
+# squid_data <- simulate_population(
+# data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
+#   parameters=list(
+#     individual=list(
+#  	  vcov=1.2
+#  	),
+#  	observation=list(
+#      names=c("temperature","rainfall", "wind"),
+#      mean = c(10,1 ,20),
+#      vcov =matrix(c(
+#        1, 0, 1,
+#        0,0.1,0,
+#        1, 0, 2
+#        ), nrow=3 ,ncol=3),
+#      beta =c(0.5,-3,0.4)
+#    ),
+#    residual=list(
+#      mean=10,
+#      vcov=1
+#    )
+#  )
+# )
 
 # colors <- make_colors(rownames(out$groups))
 # out<-simVar(squid_data$param)

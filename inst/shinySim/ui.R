@@ -262,18 +262,7 @@ bs4Dash::dashboardPage(
           #     title = "Component type"
           #   )
           # )
-          shiny::uiOutput("component_type_edit")
-        ),
-
-        # variable number
-        shiny::tags$div(style = "text-align: center;",
-        shinyjs::hidden(
-          shiny::numericInput(
-            inputId = "input_variable_no_edit",
-            label = shiny::tags$span(style = "color: black;", "Variable No."),
-            value = 1, min = 1, max = 10
-          )
-        )
+          shiny::uiOutput("component_type_edit_print")
         ),
 
         # tables#

@@ -451,53 +451,49 @@ shiny::observeEvent(input$input_group, {
     update_param <- reactiveValuesToList(param_list)[[input$choose_component]]
 
    if(input$choose_component %in% c("","intercept","observation","interactions","residual")){
-      manyToggle(hide=c("component_type_edit"))
+      manyToggle(hide=c("component_type_edit_print"))
     }else{
 
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "component_type_edit",
-        selected = if(update_param$covariate){"covariate"}else if(update_param$fixed){"fixed categorical"}else{"predictor"}
-      )
+      component_type_edit <- if(update_param$covariate){"covariate"}else if(update_param$fixed){"fixed categorical"}else{"predictor"}
 
-      if(input$component_type_edit==c("predictor")){
+      output$component_type_edit_print<- renderText(
+        paste(component_type_edit))
+
+      output$component_type_edit_print<- renderText(
+        paste(component_type_edit))
+
+
+      if(component_type_edit==c("predictor")){
         manyToggle(
-          show=c("input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","component_type_edit"),
+          show=c( "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","component_type_edit_print"),
           hide=c("intercept_panel")
         )
       }
 
-      if(input$component_type_edit==c("random")){
-        manyToggle(
-          show=c("input_variable_no_edit", "beta_panel_edit", "vcov_panel_edit", "name_panel_edit","component_type_edit"),
-          hide=c("mean_panel_edit", "intercept_panel")
-        )
-      }
-
-      if(input$component_type_edit%in%c("fixed categorical","covariate")){
+      if(component_type_edit%in%c("fixed categorical","covariate")){
          manyToggle(
-          show=c("beta_panel_edit", "name_panel_edit","component_type_edit"),
-          hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
+          show=c("beta_panel_edit", "name_panel_edit","component_type_edit_print"),
+          hide=c( "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
         )
       }
     }
 
     if(input$choose_component == c("")){
       manyToggle(
-        hide=c("input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","intercept_panel")
+        hide=c( "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","intercept_panel")
       )
     }
 
     if(input$choose_component == c("observation")){
       manyToggle(
-        show=c("input_variable_no_edit", "name_panel_edit", "mean_panel_edit", "vcov_panel_edit", "beta_panel_edit"),
+        show=c( "name_panel_edit", "mean_panel_edit", "vcov_panel_edit", "beta_panel_edit"),
         hide="intercept_panel"
       )
     }
 
     if(input$choose_component == c("interactions")){
       manyToggle(
-        show=c("input_variable_no_edit", "name_panel_edit", "beta_panel_edit"),
+        show=c( "name_panel_edit", "beta_panel_edit"),
         hide=c( "mean_panel_edit", "vcov_panel_edit","intercept_panel")
       )
     }
@@ -505,7 +501,7 @@ shiny::observeEvent(input$input_group, {
     if(input$choose_component %in% c("intercept")){
       manyToggle(
         show="intercept_panel",
-        hide=c( "input_variable_no_edit", "name_panel_edit", "beta_panel_edit","mean_panel_edit", "vcov_panel_edit")
+        hide=c(  "name_panel_edit", "beta_panel_edit","mean_panel_edit", "vcov_panel_edit")
       )
       shinyjs::disable("delete_parameters")
     }
@@ -514,7 +510,7 @@ shiny::observeEvent(input$input_group, {
     if(input$choose_component == c("residual")){
       manyToggle(
         show=c("vcov_panel_edit", "beta_panel_edit"),
-        hide=c( "input_variable_no_edit", "name_panel_edit","mean_panel_edit", "intercept_panel")
+        hide=c(  "name_panel_edit","mean_panel_edit", "intercept_panel")
       )
       shinyjs::disable("delete_parameters")
     }
@@ -529,10 +525,7 @@ shiny::observeEvent(input$input_group, {
       colnames(vcov_update) <- 1:nrow(update_param$vcov)
       vcov_tab$edit <- vcov_update
 
-      shiny::updateNumericInput(
-        session = session,
-        inputId = "input_variable_no_edit",
-        value = nrow(update_param$beta))
+
     }
 
 
@@ -670,56 +663,6 @@ shiny::observeEvent(input$input_group, {
       } )
 
 
-
-  # shiny::observeEvent(input$component_type_edit, {
-
-  #   # shiny::updateNumericInput(
-  #   #   session = session,
-  #   #   inputId = "input_variable_no_edit",
-  #   #   value = 1)
-
-  #   if(input$component_type_edit==c("predictor")){
-  #     manyToggle(
-  #       show=c("component_type_edit","input_variable_no_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit"),
-  #       hide=c("intercept_panel")
-  #     )
-  #   }
-
-  #   if(input$component_type_edit==c("random")){
-  #     manyToggle(
-  #       show=c("component_type_edit","input_variable_no_edit", "beta_panel_edit", "vcov_panel_edit", "name_panel_edit"),
-  #       hide=c("mean_panel_edit", "intercept_panel")
-  #     )
-  #   }
-
-  #   if(input$component_type_edit==c("fixed categorical")){
-  #     manyToggle(
-  #       show=c("component_type_edit","beta_panel_edit","name_panel_edit"),
-  #       hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
-  #     )
-
-  #     num_level<-length(unique(group_list$x[[component_list$x$group[component_list$x$component==input$choose_component]]]))
-  #     if(num_level>1){
-  #     # if(length(table(group_list$x))>1){
-  #       shiny::updateNumericInput(
-  #         session = session,
-  #         inputId = "input_variable_no_edit",
-  #         value = num_level)
-  #     }
-  #   }
-
-  #   if(input$component_type_edit==c("covariate")){
-  #     manyToggle(
-  #       show=c("component_type_edit","beta_panel_edit","name_panel_edit"),
-  #       hide=c("input_variable_no_edit", "vcov_panel_edit", "mean_panel_edit", "intercept_panel")
-  #     )
-  #   }
-
-
-  # })
-
-
-
 ####
 ## Pressing update button
 ####
@@ -768,8 +711,7 @@ shiny::observeEvent(input$input_group, {
 
       var_list$x <- simVar(reactiveValuesToList(param_list),data.struc)
 
-      shinyjs::hide("component_type_edit")
-      shinyjs::hide("input_variable_no_edit")
+      shinyjs::hide("component_type_edit_print")
       shinyjs::hide("name_panel_edit")
       shinyjs::hide("mean_panel_edit")
       shinyjs::hide("vcov_panel_edit")
@@ -782,19 +724,27 @@ shiny::observeEvent(input$input_group, {
         selected = ""
       )
 
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "component_type_edit",
-        selected = ""
-      )
+  })
 
-      shiny::updateNumericInput(
-        session = session,
-        inputId = "input_variable_no_edit",
-        value = 1
-      )
+
+
+####
+## Pressing Delete button
+####
+  
+  shiny::observeEvent(input$delete_parameters, {
+    # param_name <- input$choose_component
+    # param_list <- NULL
+    ## problem is that assigning it to NULL doesn't remove it from the reactive values. If it is still there and empty, I suspect it will break several of the other functions. 
+    
+    shinyWidgets::updatePickerInput(
+      session = session,
+      inputId = "choose_component",
+      selected = ""
+    )
 
   })
+
 
 
 
@@ -968,12 +918,7 @@ shiny::observeEvent(input$input_group, {
     )
   })
   
-  #delete data
-  
-  shiny::observeEvent(input$delete_parameters, {
-    dataset_name <- input$choose_component
-    datasets[[dataset_name]] <- NULL
-  })
+
 }
 
 
