@@ -465,7 +465,7 @@ shiny::observeEvent(input$input_group, {
 
       if(component_type_edit==c("predictor")){
         manyToggle(
-          show=c( "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","component_type_edit_print"),
+          show=c( "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit","component_type_edit_div_print", "component_type_edit_div", "component_type_edit_print"),
           hide=c("intercept_panel")
         )
       }
@@ -513,6 +513,10 @@ shiny::observeEvent(input$input_group, {
         hide=c(  "name_panel_edit","mean_panel_edit", "intercept_panel")
       )
       shinyjs::disable("delete_parameters")
+    }
+
+    if(!input$choose_component %in% c("residual","intercept")){
+      shinyjs::enable("delete_parameters")
     }
 
     if(!input$choose_component %in% c("","intercept")){
@@ -563,7 +567,7 @@ shiny::observeEvent(input$input_group, {
                            "}"
                          )
           )
-        ) |> DT::formatStyle(1,`text-align` = 'left')
+        ) |> DT::formatStyle(1,`text-align` = 'centre')
       )
 
       output$vcov_table_edit <- DT::renderDT(
@@ -591,7 +595,7 @@ shiny::observeEvent(input$input_group, {
               "}"
             )
           )
-        ) |> DT::formatStyle(1:nrow(vcov_tab$edit),`text-align` = 'left')
+        ) |> DT::formatStyle(1:nrow(vcov_tab$edit),`text-align` = 'centre')
       )
 
        output$name_table_edit <- DT::renderDT(
@@ -629,7 +633,7 @@ shiny::observeEvent(input$input_group, {
               '}'
             )
           )
-        ) |> DT::formatStyle(1,`text-align` = 'left') |>
+        ) |> DT::formatStyle(1,`text-align` = 'centre') |>
           DT::formatStyle(names(name_tab$x), lineHeight = '30px')
       )
 
@@ -658,7 +662,7 @@ shiny::observeEvent(input$input_group, {
               "}"
             )
           )
-        ) |> DT::formatStyle(1,`text-align` = 'left')
+        ) |> DT::formatStyle(1,`text-align` = 'centre')
       )
       } )
 

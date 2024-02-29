@@ -237,6 +237,7 @@ bs4Dash::dashboardPage(
       shiny::tabPanel(
         title = "Update",
         # pickerinput
+        shiny::splitLayout(
         shiny::tags$div(style = "text-align: center;",
         shinyWidgets::pickerInput(
           inputId = "choose_component",
@@ -251,6 +252,11 @@ bs4Dash::dashboardPage(
 
         # hidden input component
         shinyjs::hidden(
+          shiny::tags$div(
+          style = "text-align: center; font-weight: bold;",
+          id = "component_type_edit_div",
+            "Component Type"
+            ),  
           # shinyWidgets::pickerInput(
           #   inputId = "component_type_edit",
           #   label = NULL,
@@ -262,34 +268,40 @@ bs4Dash::dashboardPage(
           #     title = "Component type"
           #   )
           # )
+          shiny::tags$div(
+            id = "component_type_edit_div_print",
+          style = "text-align: center;",
+          shiny::br(),
           shiny::uiOutput("component_type_edit_print")
+        )
+          )
         ),
 
         # tables#
         # name
         shiny::splitLayout(
         shinyjs::hidden(
-          shiny::tags$div(
+          shiny::tags$div(style = "text-align: center;",
             id = "name_panel_edit",
             DT::DTOutput("name_table_edit")
           )
         ),
         # mean
         shinyjs::hidden(
-          shiny::tags$div(
+          shiny::tags$div(style = "text-align: center;",
             id = "beta_panel_edit",
             DT::DTOutput("beta_table_edit")
           )
         )
         ),
         shinyjs::hidden(
-          shiny::tags$div(
+          shiny::tags$div(style = "text-align: center;",
             id = "vcov_panel_edit",
             DT::DTOutput("vcov_table_edit")
           )
         ),
         shinyjs::hidden(
-          shiny::tags$div(
+          shiny::tags$div(style = "text-align: center;",
             id = "mean_panel_edit",
             DT::DTOutput("mean_table_edit")
           )
@@ -319,6 +331,7 @@ bs4Dash::dashboardPage(
         #                   style = "color: steelblue"))
         #   ),
         # br(),
+        shiny::splitLayout(
         shiny::tags$div(
           style = "display: flex; justify-content: center;",
           shiny::actionButton(
@@ -327,13 +340,13 @@ bs4Dash::dashboardPage(
             style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
           )
         ),
-        shiny::br(),
         shiny::tags$div(
           style = "display: flex; justify-content: center;",
           shiny::actionButton(
             "delete_parameters",
             label = "Delete",
             style = "color: #ffffff; background-color: #ff0000; border-color: #ff0000"
+          )
           )
         )
       )
@@ -354,7 +367,7 @@ bs4Dash::dashboardPage(
     ),
     shiny::fluidRow(
       bs4Dash::column(
-        width = 9,
+        width = 8,
         ## component output
         bs4Dash::box(
           width = NULL,
@@ -401,21 +414,21 @@ bs4Dash::dashboardPage(
           fluidRow(
             column(width = 6,
               "Contribution of different hierarchical levels:",br(),br(),
-              splitLayout(cellWidths = c("75%","25%"),
+              splitLayout(cellWidths = c("55%","45%"),
                 shiny::tableOutput("output_variance_mid_tab"),
                 shiny::plotOutput("output_variance_mid_plot", height = "200px")
               )
             ),
             column(width = 6,
               "Contribution of different predictors:",br(),br(),
-            splitLayout(cellWidths = c("75%","25%"),
+            splitLayout(cellWidths = c("55%","45%"),
               shiny::tableOutput("output_variance_right_tab"),
               shiny::plotOutput("output_variance_right_plot", height = "200px")
             ))
           )
         )),
       bs4Dash::column(
-        width = 3,
+        width = 4,
         # variance output
         bs4Dash::box(
           elevation = 3,
