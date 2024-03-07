@@ -32,18 +32,11 @@ bs4Dash::dashboardPage(
   header = bs4Dash::dashboardHeader(
     status = "primary",
     fixed = TRUE,
-    prompter::use_prompt(),
     shiny::actionButton(
       inputId = "citeme",
       style = "position: absolute; right: 0px; background-color: #5E81AC; border-color: #5E81AC;",
       label = shiny::tags$img(src = "squidSim_logo.png", height = "25px", width = "20px")
-    ) |>
-    prompter::add_prompt(
-    position = "left",
-    message = "Click me!",
-    type = "info",
-    animate = TRUE),
-    
+    ),
     # add some shinysim details
     title = bs4Dash::dashboardBrand(
       title = "shinySim",
@@ -109,7 +102,7 @@ bs4Dash::dashboardPage(
         # inputgroup
         shiny::splitLayout(
           shiny::tags$div(style = "text-align: center;",
-        shinyhelper::helper(shinyWidgets::pickerInput(
+        shinyWidgets::pickerInput(
           inputId = "input_group",
           label = shiny::tags$span(
             style = "color: black;",
@@ -124,12 +117,7 @@ bs4Dash::dashboardPage(
           options = list(
             title = "Group"
           )
-        ), type = "markdown",
-                              content = "Groups",
-                              title = "Group",
-                              buttonLabel = "Let's Squid It!",
-                              easyClose = FALSE,
-                              fade = TRUE)
+        )
         ),
         # hidden group name
         shiny::tags$div(style = "text-align: center;",
@@ -144,9 +132,8 @@ bs4Dash::dashboardPage(
         # hidden input component
         shiny::splitLayout(
           shiny::tags$div(style = "text-align: center;",
-                          id = "componnent_type_widg",
         shinyjs::hidden(
-          shinyhelper::helper(shinyWidgets::pickerInput(
+          shinyWidgets::pickerInput(
             inputId = "component_type",
             label = shiny::tags$span(
               style = "color: black;",
@@ -163,12 +150,7 @@ bs4Dash::dashboardPage(
             options = list(
               title = "Type"
             )
-          ) , type = "markdown",
-          content = "Groups",
-          title = "Group",
-          buttonLabel = "Let's Squid It!",
-          easyClose = FALSE,
-          fade = TRUE) 
+          )
         )
         ),
         # variable number
@@ -196,7 +178,7 @@ bs4Dash::dashboardPage(
           shinyjs::hidden(
             shiny::tags$div(
               id = "name_panel",
-              DT::DTOutput("name_table") 
+              DT::DTOutput("name_table")
             )
           ),
           shinyjs::hidden(
@@ -399,13 +381,6 @@ bs4Dash::dashboardPage(
           elevation = 3,
           title = "Simulation Components",
           shiny::uiOutput("output_component")
-          |>
-            shinyhelper::helper(type = "markdown",
-                                content = "Components",
-                                title = "Components",
-                                buttonLabel = "Let's Squid It!",
-                                easyClose = FALSE,
-                                fade = TRUE)
         ),
         ## equation output
         bs4Dash::box(
@@ -419,13 +394,7 @@ bs4Dash::dashboardPage(
           closable = FALSE,
           maximizable = TRUE,
           title = "Simulation Equation",
-          shiny::uiOutput("output_equation")  |>
-            shinyhelper::helper(type = "markdown",
-                                content = "Equation",
-                                title = "Equation",
-                                buttonLabel = "Let's Squid It!",
-                                easyClose = FALSE,
-                                fade = TRUE)
+          shiny::uiOutput("output_equation")
         ),
         ## code output
         bs4Dash::box(
@@ -440,13 +409,7 @@ bs4Dash::dashboardPage(
           maximizable = TRUE,
           title = "Variance Decomposition",
           # "Contribution of the simulated predictors to the mean and variance in the response",br(),br(),
-          shiny::uiOutput("output_variance")  |>
-            shinyhelper::helper(type = "markdown",
-                                content = "Variance",
-                                title = "Components",
-                                buttonLabel = "Let's Squid It!",
-                                easyClose = FALSE,
-                                fade = TRUE),
+          shiny::uiOutput("output_variance"),
           br(),
           fluidRow(
             column(width = 6,
@@ -478,13 +441,7 @@ bs4Dash::dashboardPage(
           closable = FALSE,
           maximizable = TRUE,
           title = "Simulation Code",
-          shiny::uiOutput("output_code")  |>
-            shinyhelper::helper(type = "markdown",
-                                content = "Code",
-                                title = "Code",
-                                buttonLabel = "Let's Squid It!",
-                                easyClose = FALSE,
-                                fade = TRUE)
+          shiny::uiOutput("output_code")
         )
       )
     )

@@ -1,7 +1,7 @@
 # shinySim created by Ed Ivimey-Cook and Joel Pick. 26th January 2024
 
 server <- function(input, output, session){
-shinyhelper::observe_helpers(withMathJax = TRUE, help_dir = "helpfiles")
+
   ## list of added components as well as interactions
   component_list <- shiny::reactiveValues(
     x = data.frame(component=c("intercept","residual"),group=c("intercept","residual")))
