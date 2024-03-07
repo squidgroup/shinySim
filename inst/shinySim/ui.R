@@ -30,13 +30,22 @@ bs4Dash::dashboardPage(
 
   ####### Header Code#########
   header = bs4Dash::dashboardHeader(
+    prompter::use_prompt(),
     status = "primary",
     fixed = TRUE,
     shiny::actionButton(
       inputId = "citeme",
       style = "position: absolute; right: 0px; background-color: #5E81AC; border-color: #5E81AC;",
       label = shiny::tags$img(src = "squidSim_logo.png", height = "25px", width = "20px")
-    ),
+    )
+    |>
+      prompter::add_prompt(
+        position = "left",
+        message = "Click me!",
+        type = "info",
+        animate = TRUE,
+        shadow = TRUE,
+        arrow = TRUE),
     # add some shinysim details
     title = bs4Dash::dashboardBrand(
       title = "shinySim",
