@@ -5,9 +5,11 @@ shiny app interface to squidSim
 
 Currently the shinySim package is not on CRAN, but you can install the development version from GitHub using the devtools package:
 
+```{r}
     # install.packages("devtools")
     devtools::install_github("squidgroup/shinySim")
     library(shinySim)
+```
 
 #### Running shinySim
 
