@@ -921,6 +921,11 @@ shiny::observeEvent(input$input_group, {
       imageWidth = "80"
     )
   })
+
+    #stop app when sesssion ends
+      session$onSessionEnded(function() {
+        stopApp()
+      })
   
 
 }
