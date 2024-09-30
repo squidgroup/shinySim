@@ -196,23 +196,23 @@ make_equation<-function(parameters, print_colours=TRUE){
 	## make latex equation
 	print_equation <- 
 			paste(
-				c("\\beta_0",
+				c("y = \\beta_0",
 					part_print[which(all$component!="residual")],
 				  if("interactions" %in% components){int_print},
 				  part_print[which(all$component=="residual")]),
 				collapse=" + ")
 	
 	## make components string
-	print_components <- paste(paste0(
-		if(print_colours){paste0("<span style=\"color:",colors ,"\">")},
-		components,
-		if(print_colours){"</span>"}),
-		collapse=" + ")
+	print_components <- paste("response =",paste(paste0(
+			if(print_colours){paste0("<span style=\"color:",colors ,"\">")},
+			components,
+			if(print_colours){"</span>"}),
+			collapse=" + "))
 
 	## make code to print
 	print_code <- paste0(
 				paste0("parameters = list(\n", 
-				"  intercept = c(", paste0(parameters[["intercept"]],collapse=", "),"),\n"),
+				"  intercept = ", print_vector(parameters[["intercept"]]),",\n"),
 				paste0(sapply(params[components!="intercept"], write_code_part,print_colours=print_colours),collapse=", \n")
 			, "\n)", collapse="")
 	
