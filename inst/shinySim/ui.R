@@ -421,19 +421,28 @@ bs4Dash::dashboardPage(
           shiny::uiOutput("output_variance"),
           br(),
           fluidRow(
-            column(width = 6,
-              "Contribution of different hierarchical levels:",br(),br(),
-              splitLayout(cellWidths = c("55%","45%"),
-                shiny::tableOutput("output_variance_mid_tab"),
-                shiny::plotOutput("output_variance_mid_plot", height = "200px")
+            column(width = 4,
+              splitLayout(cellWidths = c("50%","50%"),
+                 "Contribution of different hierarchical levels:",br(),br(),
+                "Contribution of different predictors:",br(),br()
               )
-            ),
-            column(width = 6,
-              "Contribution of different predictors:",br(),br(),
-            splitLayout(cellWidths = c("55%","45%"),
-              shiny::tableOutput("output_variance_right_tab"),
-              shiny::plotOutput("output_variance_right_plot", height = "200px")
-            ))
+            )
+          ),
+           fluidRow(
+            column(width = 12,
+              splitLayout(cellWidths = c("50%","50%"),
+                shiny::tableOutput("output_variance_mid_tab"),
+                 shiny::tableOutput("output_variance_right_tab")
+              )
+            )
+          ),
+          fluidRow(
+            column(width = 12,
+              splitLayout(cellWidths = c("50%","50%"),
+                 shiny::plotOutput("output_variance_mid_plot", height = "200px", width = "50%"),
+                shiny::plotOutput("output_variance_right_plot", height = "200px", width = "50%")
+              )
+            )
           )
         )),
       bs4Dash::column(
