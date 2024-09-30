@@ -153,7 +153,7 @@ bs4Dash::dashboardPage(
               )
             ),
             choices = c(
-              "predictor", "fixed categorical",
+              "predictor","random" "fixed categorical",
               "covariate"
             ),
             options = list(
