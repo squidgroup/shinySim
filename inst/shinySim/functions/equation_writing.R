@@ -148,7 +148,8 @@ make_equation<-function(parameters, print_colours=TRUE){
 		display_n = ifelse(length(x$names)>1,TRUE,FALSE),
 		letter = all_letters[x$component],
 		color = colors[x$component],
-		subscript = subscripts[x$group]
+		subscript = subscripts[x$group],
+		row.names = NULL
 	)),make.row.names = FALSE))# 
 
 	## add colors and subscripts to betas
