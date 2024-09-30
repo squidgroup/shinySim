@@ -21,7 +21,7 @@ server <- function(input, output, session){
   residual_start = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)
 
   #parameter list
-  param_list <- shiny::reactiveValues(intercept = 0,residual=residual_start)
+  param_list <- shiny::reactiveValues(x=list(intercept = 0,residual=residual_start))
   # list containing components, equation and  code for output
   output_list <- shiny::reactiveValues(
     x = make_equation(list(intercept = 0,residual = residual_start))
@@ -319,7 +319,9 @@ shiny::observeEvent(input$input_group, {
     comp_group <- input$input_group
 
     int_names <- c(input$int_var1,input$int_var2)
-    #all_names$x
+    
+    print(all_names$x)
+    v_names <- unname(as.character(as.matrix(name_tab$x)))
 
 
     # if(comp_group == "interactions" && ! all(unique(c(strsplit(v_names,":"),recursive=TRUE)) %in% all_names$x) ){
@@ -327,11 +329,12 @@ shiny::observeEvent(input$input_group, {
     # }else
     if(comp_group == "interactions" && any(int_names=="")) {
       shinyalert::shinyalert(title = "Variables need to be specified ", type = "error")
-    }else
-    if(input$input_group == ""){
+    }else if(input$input_group == ""){
       shinyalert::shinyalert(title = "Please select a group", type = "error")
     }else if(comp_name %in% component_list$x$component){
       shinyalert::shinyalert(title = "Component already added", type = "error")
+    }else if(v_names %in% all_names$x){
+      shinyalert::shinyalert(title = "Names already used", type = "error")
     }else if(input$component_type == "" & !(input$input_group %in% c("observation", "interactions"))){
       shinyalert::shinyalert(title = "Please select a component type", type = "error")
     }else{
@@ -351,17 +354,17 @@ shiny::observeEvent(input$input_group, {
 
 
       #make squidSim parameter list
-      param_list[[comp_name]] <- list(
+      param_list$x[[comp_name]] <- list(
         group = comp_group,
         beta = unname(as.matrix(beta_tab$x)),
         mean = as.numeric(as.matrix(mean_tab$x)),
         vcov = unname(as.matrix(vcov_tab$x))
       )
 
-     v_names <- unname(as.character(as.matrix(name_tab$x)))
+     # v_names <- unname(as.character(as.matrix(name_tab$x)))
 
       ## add in names if they are entered
-      param_list[[comp_name]]$names <-
+      param_list$x[[comp_name]]$names <-
         if(comp_group == "interactions"){
           paste0(input$int_var1,":",input$int_var2)
         }else if(!all(nchar(v_names)==0)) {
@@ -372,19 +375,19 @@ shiny::observeEvent(input$input_group, {
 
 
       if(comp_group != "interactions"){
-        param_list[[comp_name]]$fixed <- input$component_type == "fixed categorical"
-        param_list[[comp_name]]$covariate <- input$component_type == "covariate"
-        v_names2 <- param_list[[comp_name]]$names
+        param_list$x[[comp_name]]$fixed <- input$component_type == "fixed categorical"
+        param_list$x[[comp_name]]$covariate <- input$component_type == "covariate"
+        v_names2 <- param_list$x[[comp_name]]$names
         all_names$x <- c(all_names$x ,v_names2)
         # print(all_names$x)
       }
 
-      # print(reactiveValuesToList(param_list))
+      # print(param_list$x)
 
       ## update equation
-      output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
+      output_list$x <- make_equation(param_list$x, print_colours=TRUE)
 
-      var_list$x <- simVar(reactiveValuesToList(param_list),data.struc)
+      var_list$x <- simVar(param_list$x,data.struc)
 
       ## restore everything
 
@@ -448,7 +451,7 @@ shiny::observeEvent(input$input_group, {
 
   shiny::observeEvent(input$choose_component, {
 
-    update_param <- reactiveValuesToList(param_list)[[input$choose_component]]
+    update_param <- param_list$x[[input$choose_component]]
 
    if(input$choose_component %in% c("","intercept","observation","interactions","residual")){
       manyToggle(hide=c("component_type_edit_print"))
@@ -520,7 +523,7 @@ shiny::observeEvent(input$input_group, {
     }
 
     if(!input$choose_component %in% c("","intercept")){
-# print(reactiveValuesToList(param_list))
+# print(param_list$x)
 
       name_tab$edit <- data.frame(Name=update_param$names)
       mean_tab$edit <- data.frame(Mean=update_param$mean)
@@ -677,17 +680,21 @@ shiny::observeEvent(input$input_group, {
 
     update_comp <- input$choose_component
 
+    updates_names <- unname(as.character(as.matrix(name_tab$edit)))
+
       # work out group name
     update_group <- component_list$x$group[component_list$x$component==update_comp]
 
-    if(input$choose_component == ""){
+    if(update_comp == ""){
       shinyalert::shinyalert(title = "Please select a component", type = "error")
-    } else if(input$choose_component == "intercept"){
-      param_list[["intercept"]] <- input$intercept_panel
+    }else if(updates_names %in% all_names$x){
+      shinyalert::shinyalert(title = "Names already used", type = "error")
+    } else if(update_comp == "intercept"){
+      param_list$x[["intercept"]] <- input$intercept_panel
     }else{
 
       #make squidSim parameter list
-      param_list[[update_comp]] <- list(
+      param_list$x[[update_comp]] <- list(
         group = update_group,
         beta = unname(as.matrix(beta_tab$edit)),
         mean = as.numeric(as.matrix(mean_tab$edit)),
@@ -695,12 +702,12 @@ shiny::observeEvent(input$input_group, {
       )
 
       if(update_group != "interactions"){
-          param_list[[update_comp]]$fixed <- input$component_type == "fixed categorical"
-          param_list[[update_comp]]$covariate <- input$component_type == "covariate"
+          param_list$x[[update_comp]]$fixed <- input$component_type == "fixed categorical"
+          param_list$x[[update_comp]]$covariate <- input$component_type == "covariate"
       }
 
       ## add in names if they are entered
-      param_list[[update_comp]]$names <-
+      param_list$x[[update_comp]]$names <-
         if(!all(nchar(as.matrix(name_tab$edit))==0)) {
           unname(as.character(as.matrix(name_tab$edit)))
         }else{
@@ -708,12 +715,12 @@ shiny::observeEvent(input$input_group, {
         }
     }
 
-      # print(reactiveValuesToList(param_list))
+      # print(param_list$x)
 
       ## update equation
-      output_list$x <- make_equation(reactiveValuesToList(param_list), print_colours=TRUE)
+      output_list$x <- make_equation(param_list$x, print_colours=TRUE)
 
-      var_list$x <- simVar(reactiveValuesToList(param_list),data.struc)
+      var_list$x <- simVar(param_list$x,data.struc)
 
       shinyjs::hide("component_type_edit_print")
       shinyjs::hide("name_panel_edit")
@@ -737,14 +744,24 @@ shiny::observeEvent(input$input_group, {
 ####
   
   shiny::observeEvent(input$delete_parameters, {
-    # param_name <- input$choose_component
-    # param_list <- NULL
-    ## problem is that assigning it to NULL doesn't remove it from the reactive values. If it is still there and empty, I suspect it will break several of the other functions. 
+    delete_comp <- input$choose_component
+    delete_names <- param_list$x[[delete_comp]]$names
+
+    all_names$x <- all_names$x[!all_names$x %in% delete_names]
+
+    param_list$x[delete_comp] <- NULL
     
+    output_list$x <- make_equation(param_list$x, print_colours=TRUE)
+
+    var_list$x <- simVar(param_list$x,data.struc)
+
+    component_list$x <- component_list$x[!component_list$x$component%in% delete_comp,]
+
     shinyWidgets::updatePickerInput(
       session = session,
       inputId = "choose_component",
-      selected = ""
+      selected = "",
+      choices = component_list$x$component
     )
 
   })
