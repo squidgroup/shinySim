@@ -333,7 +333,7 @@ shiny::observeEvent(input$input_group, {
       shinyalert::shinyalert(title = "Please select a group", type = "error")
     }else if(comp_name %in% component_list$x$component){
       shinyalert::shinyalert(title = "Component already added", type = "error")
-    }else if(v_names %in% all_names$x){
+    }else if(any(v_names %in% all_names$x)){
       shinyalert::shinyalert(title = "Names already used", type = "error")
     }else if(input$component_type == "" & !(input$input_group %in% c("observation", "interactions"))){
       shinyalert::shinyalert(title = "Please select a component type", type = "error")
