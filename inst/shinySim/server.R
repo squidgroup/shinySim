@@ -320,7 +320,6 @@ shiny::observeEvent(input$input_group, {
 
     int_names <- c(input$int_var1,input$int_var2)
     
-    print(all_names$x)
     v_names <- unname(as.character(as.matrix(name_tab$x)))
 
 

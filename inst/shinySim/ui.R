@@ -153,7 +153,7 @@ bs4Dash::dashboardPage(
               )
             ),
             choices = c(
-              "predictor", "random", "fixed categorical",
+              "predictor","random", "fixed categorical",
               "covariate"
             ),
             options = list(
@@ -421,10 +421,10 @@ bs4Dash::dashboardPage(
           shiny::uiOutput("output_variance"),
           br(),
           fluidRow(
-            column(width = 4,
+            column(width = 12,
               splitLayout(cellWidths = c("50%","50%"),
-                 "Contribution of different hierarchical levels:",br(),br(),
-                "Contribution of different predictors:",br(),br()
+                 "Contribution of different hierarchical levels:",
+                "Contribution of different predictors:"
               )
             )
           ),
