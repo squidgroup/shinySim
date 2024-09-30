@@ -116,7 +116,7 @@ simVar <- function(parameters,data_structure){
 
 	if("interactions" %in% names(param)){
 		
-		means1 <- do.call(c,c(sapply(p_names, function(i) param[[i]]$mean ), use.names=FALSE))
+		means1 <- do.call(c,c(lapply(p_names, function(i) param[[i]]$mean ), use.names=FALSE))
 
 		covs1 <- make_big_matrix(lapply(p_names, function(i) param[[i]]$vcov ))
 
