@@ -113,13 +113,11 @@ bs4Dash::dashboardPage(
           shiny::tags$div(style = "text-align: center;",
         shinyWidgets::pickerInput(
           inputId = "input_group",
-          label = shiny::tags$span(
-            style = "color: black;",
-            "Select Group",
-            shiny::tags$span(
-              style = "color: red;",
-              "*"
-            )
+          label = shiny::tagList(
+            shiny::actionButton(inputId = "click_group", 
+                                label = shiny::tags$span(style = "white-space: nowrap;", "Select Group",
+                                                         shiny::tags$span(style = "color: red; margin-left: 0px;", "*")),
+                                style = "border: none; background-color: transparent; padding: 0; font-weight: bold;")
           ),
           selected = NULL,
           choices = c("observation", "interactions"),
@@ -133,7 +131,12 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shiny::textInput("input_component_name",
                            value = "",
-                           label = shiny::tags$span(style = "color: grey;", "Component Name")
+                           label = shiny::tagList(
+                             shiny::actionButton(inputId = "click_component_name", 
+                                                 label = shiny::tags$span(style = "white-space: nowrap;", "Component Name",
+                                                                          shiny::tags$span(style = "color: red; margin-left: 0px;", "*")),
+                                                 style = "border: none; background-color: transparent; padding: 0; font-weight: bold;")
+                           )
           )
         )
         )
@@ -144,16 +147,14 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shinyWidgets::pickerInput(
             inputId = "component_type",
-            label = shiny::tags$span(
-              style = "color: black;",
-              "Component Type",
-              shiny::tags$span(
-                style = "color: red;",
-                "*"
-              )
+            label = shiny::tagList(
+              shiny::actionButton(inputId = "click_component_type", 
+                label = shiny::tags$span(style = "white-space: nowrap;", "Component Type",
+                 shiny::tags$span(style = "color: red; margin-left: 0px;", "*")),
+                  style = "border: none; background-color: transparent; padding: 0; font-weight: bold;")
             ),
             choices = c(
-              "predictor","random", "fixed categorical",
+              "predictor", "random", "fixed categorical",
               "covariate"
             ),
             options = list(
@@ -167,13 +168,11 @@ bs4Dash::dashboardPage(
         shinyjs::hidden(
           shiny::numericInput(
             inputId = "input_variable_no",
-            label = shiny::tags$span(
-              style = "color: black;",
-              "Variable No.",
-              shiny::tags$span(
-                style = "color: red;",
-                "*"
-              )
+            label = shiny::tagList(
+              shiny::actionButton(inputId = "click_variable_no", 
+                                  label = shiny::tags$span(style = "white-space: nowrap;", "Variable No.",
+                                                           shiny::tags$span(style = "color: red; margin-left: 0px;", "*")),
+                                  style = "border: none; background-color: transparent; padding: 0; font-weight: bold;")
             ),
             value = 1, min = 1, max = 10
           )

@@ -736,6 +736,34 @@ shiny::observeEvent(input$input_group, {
 
   })
 
+  shiny::observeEvent(input$click_component_type, {
+          shinyalert::shinyalert(title = "Component Types",
+            text = "<div>Predictor = Simulates a predictor variable across the specific levels</div>
+<div>Fixed Categorical = Specify specific values for each level</div>
+<div>Covariate = Uses the levels as a continuous variable</div>", type = "info",
+              html = TRUE)
+})
+  
+  shiny::observeEvent(input$click_group, {
+    shinyalert::shinyalert(title = "Select Group",
+                           text = "<div>Select the variable you want to add</div>", type = "info",
+                           html = TRUE)
+  })
+  
+  shiny::observeEvent(input$click_component_name, {
+    shinyalert::shinyalert(title = "Add Component name",
+                           text = "<div>Optional - add a name for the component</div>", type = "info",
+                           html = TRUE)
+  })
+  
+  shiny::observeEvent(input$click_variable_no, {
+    shinyalert::shinyalert(title = "Add levels of variable",
+                           text = "<div>Adjust the number of levels of a component</div>", type = "info",
+                           html = TRUE)
+  })
+  
+  
+
 
 
 ####
