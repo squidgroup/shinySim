@@ -1,12 +1,13 @@
 # shinySim
-shiny app interface to squidSim
+shiny app that helps to generate code for the squidSim R pacakge, by focussing on inputting parameters
 
 #### Installation
 
-Currently the shinySim package is not on CRAN, but you can install the development version from GitHub using the devtools package:
+Currently the shinySim package is not on CRAN, but you can install the current version from GitHub using the devtools package. You will also need to have aleady installed the squidSim package:
 
 ```{r}
     install.packages("devtools")
+    devtools::install_github("squidgroup/squidSim")
     devtools::install_github("squidgroup/shinySim")
     library(shinySim)
 ```
