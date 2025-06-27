@@ -239,125 +239,125 @@ bs4Dash::dashboardPage(
             style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
           )
         )
-      ),
+      )
 
       ####### Update Tab###########
-      shiny::tabPanel(
-        title = "Update",
-        # pickerinput
-        shiny::splitLayout(
-        shiny::tags$div(style = "text-align: center;",
-        shinyWidgets::pickerInput(
-          inputId = "choose_component",
-          label = shiny::tags$span(style = "color: black;", "Select Component"),
-          selected = NULL,
-          choices = c("intercept", "residual"),
-          options = list(
-            title = "Component"
-          )
-        )
-        ),
-
-        # hidden input component
-        shinyjs::hidden(
-          shiny::tags$div(
-          style = "text-align: center; font-weight: bold;",
-          id = "component_type_edit_div",
-            "Component Type"
-            ),  
-          # shinyWidgets::pickerInput(
-          #   inputId = "component_type_edit",
-          #   label = NULL,
-          #   choices = c(
-          #     "predictor", "random", "fixed categorical",
-          #     "covariate"
-          #   ),
-          #   options = list(
-          #     title = "Component type"
-          #   )
-          # )
-          shiny::tags$div(
-            id = "component_type_edit_div_print",
-          style = "text-align: center;",
-          shiny::br(),
-          shiny::uiOutput("component_type_edit_print")
-        )
-          )
-        ),
-
-        # tables#
-        # name
-        shiny::splitLayout(
-        shinyjs::hidden(
-          shiny::tags$div(style = "text-align: center;",
-            id = "name_panel_edit",
-            DT::DTOutput("name_table_edit")
-          )
-        ),
-        # mean
-        shinyjs::hidden(
-          shiny::tags$div(style = "text-align: center;",
-            id = "beta_panel_edit",
-            DT::DTOutput("beta_table_edit")
-          )
-        )
-        ),
-        shinyjs::hidden(
-          shiny::tags$div(style = "text-align: center;",
-            id = "vcov_panel_edit",
-            DT::DTOutput("vcov_table_edit")
-          )
-        ),
-        shinyjs::hidden(
-          shiny::tags$div(style = "text-align: center;",
-            id = "mean_panel_edit",
-            DT::DTOutput("mean_table_edit")
-          )
-        ),
-        shiny::tags$div(style = "text-align: center;",
-        shinyjs::hidden(
-          shiny::numericInput(
-            inputId = "intercept_panel",
-            label = shiny::tags$span(style = "color: black;", "Intercept"),
-            value = 0
-          )
-        )
-        ),
-        # covcorr radio
-        #   shinyWidgets::radioGroupButtons(
-        #     inputId = "input_covcorr",
-        #     label = NULL,
-        #     choices = c("Corr",
-        #                 "Cov"),
-        #     direction = "horizontal",
-        #     individual = TRUE,
-        #     justified = TRUE,
-        #     checkIcon = list(
-        #       yes = tags$i(class = "fa fa-check-square",
-        #                    style = "color: steelblue"),
-        #       no = tags$i(class = "fa fa-square-o",
-        #                   style = "color: steelblue"))
-        #   ),
-        # br(),
-        shiny::splitLayout(
-        shiny::tags$div(
-          style = "display: flex; justify-content: center;",
-          shiny::actionButton(
-            "update_parameters",
-            label = "Update",
-            style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
-          )
-        ),
-        shiny::tags$div(
-          style = "display: flex; justify-content: center;",
-          shiny::actionButton(
-            "delete_parameters",
-            label = "Delete",
-            style = "color: #ffffff; background-color: #ff0000; border-color: #ff0000"
-          )
-          )
-        )
-      )
+      # shiny::tabPanel(
+      #   title = "Update",
+      #   # pickerinput
+      #   shiny::splitLayout(
+      #   shiny::tags$div(style = "text-align: center;",
+      #   shinyWidgets::pickerInput(
+      #     inputId = "choose_component",
+      #     label = shiny::tags$span(style = "color: black;", "Select Component"),
+      #     selected = NULL,
+      #     choices = c("intercept", "residual"),
+      #     options = list(
+      #       title = "Component"
+      #     )
+      #   )
+      #   ),
+      # 
+      #   # hidden input component
+      #   shinyjs::hidden(
+      #     shiny::tags$div(
+      #     style = "text-align: center; font-weight: bold;",
+      #     id = "component_type_edit_div",
+      #       "Component Type"
+      #       ),  
+      #     # shinyWidgets::pickerInput(
+      #     #   inputId = "component_type_edit",
+      #     #   label = NULL,
+      #     #   choices = c(
+      #     #     "predictor", "random", "fixed categorical",
+      #     #     "covariate"
+      #     #   ),
+      #     #   options = list(
+      #     #     title = "Component type"
+      #     #   )
+      #     # )
+      #     shiny::tags$div(
+      #       id = "component_type_edit_div_print",
+      #     style = "text-align: center;",
+      #     shiny::br(),
+      #     shiny::uiOutput("component_type_edit_print")
+      #   )
+      #     )
+      #   ),
+      # 
+      #   # tables#
+      #   # name
+      #   shiny::splitLayout(
+      #   shinyjs::hidden(
+      #     shiny::tags$div(style = "text-align: center;",
+      #       id = "name_panel_edit",
+      #       DT::DTOutput("name_table_edit")
+      #     )
+      #   ),
+      #   # mean
+      #   shinyjs::hidden(
+      #     shiny::tags$div(style = "text-align: center;",
+      #       id = "beta_panel_edit",
+      #       DT::DTOutput("beta_table_edit")
+      #     )
+      #   )
+      #   ),
+      #   shinyjs::hidden(
+      #     shiny::tags$div(style = "text-align: center;",
+      #       id = "vcov_panel_edit",
+      #       DT::DTOutput("vcov_table_edit")
+      #     )
+      #   ),
+      #   shinyjs::hidden(
+      #     shiny::tags$div(style = "text-align: center;",
+      #       id = "mean_panel_edit",
+      #       DT::DTOutput("mean_table_edit")
+      #     )
+      #   ),
+      #   shiny::tags$div(style = "text-align: center;",
+      #   shinyjs::hidden(
+      #     shiny::numericInput(
+      #       inputId = "intercept_panel",
+      #       label = shiny::tags$span(style = "color: black;", "Intercept"),
+      #       value = 0
+      #     )
+      #   )
+      #   ),
+      #   # covcorr radio
+      #   #   shinyWidgets::radioGroupButtons(
+      #   #     inputId = "input_covcorr",
+      #   #     label = NULL,
+      #   #     choices = c("Corr",
+      #   #                 "Cov"),
+      #   #     direction = "horizontal",
+      #   #     individual = TRUE,
+      #   #     justified = TRUE,
+      #   #     checkIcon = list(
+      #   #       yes = tags$i(class = "fa fa-check-square",
+      #   #                    style = "color: steelblue"),
+      #   #       no = tags$i(class = "fa fa-square-o",
+      #   #                   style = "color: steelblue"))
+      #   #   ),
+      #   # br(),
+      #   shiny::splitLayout(
+      #   shiny::tags$div(
+      #     style = "display: flex; justify-content: center;",
+      #     shiny::actionButton(
+      #       "update_parameters",
+      #       label = "Update",
+      #       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+      #     )
+      #   ),
+      #   shiny::tags$div(
+      #     style = "display: flex; justify-content: center;",
+      #     shiny::actionButton(
+      #       "delete_parameters",
+      #       label = "Delete",
+      #       style = "color: #ffffff; background-color: #ff0000; border-color: #ff0000"
+      #     )
+      #     )
+      #   )
+      # )
     )
   ),
   ####### Body Code#########
