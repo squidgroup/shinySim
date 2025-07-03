@@ -1,5 +1,5 @@
 # shinySim
-shiny app that helps to generate code for the squidSim R package.
+A Shiny GUI to the squidSim package
 
 #### Installation
 
