@@ -7,7 +7,7 @@ Currently the shinySim package is not on CRAN, but you can install the current v
 
 ```{r}
     install.packages("devtools")
-    devtools::install_github("squidgroup/squidSim")
+    devtools::install_github("squidgroup/shinySim")
     library(shinySim)
 ```
 
