@@ -1,5 +1,5 @@
 # shinySim
-A Shiny GUI to the squidSim package
+shiny app interface to squidSim
 
 #### Installation
 

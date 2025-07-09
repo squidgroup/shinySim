@@ -908,7 +908,15 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$citeme, {
     shinyalert::shinyalert(
       title = "shinySim",
-      text = paste(shiny::tags$h5("A Shiny app version of squidSim made by Ed Ivimey-Cook and Joel Pick")),
+      text = paste0(
+        shiny::tags$h5("A Shiny version of squidSim made by Ed Ivimey-Cook and Joel Pick"),
+        "<br><br>",
+        shiny::tags$a(
+          href = "https://squidgroup.org/squidSim_vignette",
+          target = "_blank",
+          "See vignette for detailed information"
+        )
+      ),
       size = "l",
       closeOnClickOutside = FALSE,
       html = TRUE,
