@@ -1,36 +1,3 @@
-# library(squidSim)
-# dd <- simulate_population(n=20,
-# 	parameters=list(
-# 		residual=list(
-# 		vcov=1)))
-# parameters <- dd$parameters
-
-# dd<-simulate_population(
-# 	data_structure = make_structure("individual(100)",rep=3),
-# 	parameters = 
-# 	list(
-# 		intercept = 0,
-# 		individual = list(
-# 			vcov=c(1,2)
-# 		),
-# 		blah = list(
-# 			beta=0.2,group = "individual"
-# 		),
-# 		observation = list(
-# 			names=c("temp","rain"),
-# 			beta=c(2,-1)
-# 		),
-# 		interactions = list(
-# 			names = ("temp:rain"),
-# 			beta = 0.5
-# 		),
-# 		residual=list(
-# 			vcov=1
-# 		)
-# 	)
-# )
-# parameters <- dd$parameters
-
 #' @title manyToggle
 #' @description multiple toggles
 #' @param show n/a
@@ -41,36 +8,6 @@ manyToggle <- function(show=NULL,hide=NULL){
   for(i in 1:length(show)) shinyjs::show(show[i])
   for(j in 1:length(hide)) shinyjs::hide(hide[j])
 }
-
-# https://shiny.posit.co/r/articles/improve/modules/
-# print_table <- function(x){
-#   js <- "table.on('click', 'td', function() { 
-#     $(this).dblclick();
-#   });"
-  
-#   DT::renderDT(
-#     DT::datatable(
-#       x,
-#       editable = list(target = "cell"),
-#       selection = 'none',
-#       rownames = FALSE,
-#       colnames = NULL,
-#       callback = DT::JS(js),
-#       class = list(stripe = FALSE),
-#       options = list(scrollX = TRUE,autoWidth = FALSE,lengthChange = TRUE, dom = "t", ordering = F, pageLength = 100)
-#     ) |> DT::formatStyle(1,`text-align` = 'left')#if(is.matrix(x)){1:ncol(x)}else{1}
-#   )
-# }
-
-  # ro <- shiny::reactiveValues(x = NULL)
-  # editTable <- function(table_name,cell_edit,reactive_object,session){
-      
-  #     ro$x <<- reactive_object
-  #     proxy <<- DT::dataTableProxy(table_name,session=session)
-      
-  #     ro$x[cell_edit$row, cell_edit$col+1] <<- DT::coerceValue(cell_edit$value, ro$x[cell_edit$row, cell_edit$col+1])
-  #     DT::replaceData(proxy, ro$x, resetPaging = FALSE)
-  # }
 
 #' @title order_components
 #' @description function to order component names
@@ -95,14 +32,12 @@ make_colors <- function(components){
 	colors
 }
 
-
 #' @title make_equation
 #' @description make equation
 #' @param parameters parameters to make the equation
 #' @param print_colours do you wantt to print colors? 
 #' @keywords internal
 #' @export
-
 make_equation<-function(parameters, print_colours=TRUE){
 
 	## reorder names
@@ -126,7 +61,6 @@ make_equation<-function(parameters, print_colours=TRUE){
 	all_letters[!names(all_letters)%in% base_levels ] <- 
 	letters[23:(24-sum(!names(all_letters)%in% base_levels ))]
 	
-
 	## assign subscripts to different groups
 	hlevels <-unique(sapply(params[added_comp], function(x) x$group ))
 
@@ -174,13 +108,10 @@ make_equation<-function(parameters, print_colours=TRUE){
 		),
 	"")
 
-
 	## make interaction terms
 	if("interactions" %in% components){
 		int_names <- parameters[["interactions"]]$names
 		int_betas <- parameters[["interactions"]]$beta
-		# int_names <- c("temp:rain","temp:blah_effect")
-	 # x<-strsplit(parameters[["interactions"]]$names,":")[[1]]
 		## get the variables from the interactions, find varialbes and add a beta
 		int_beta_print <- ifelse(int_betas!=1,paste0(
 					if(print_colours){paste0("\\color{",colors["interactions"],"}{")},
@@ -226,8 +157,6 @@ make_equation<-function(parameters, print_colours=TRUE){
 
 }
 
-# x<-params[["interactions"]]
-
 #' @title print_vector
 #' @description prints a vector
 #' @param x eqation
@@ -266,14 +195,6 @@ write_code_part <- function(x, print_colours) {
 		show_vcv_mat <- !all(x$vcov[lower.tri(x$vcov)]==0)
 	}
 
-	# show_covariate<-
-	# if(x$fixed){
-		
-	# }
-	# if(x$covariate){
-
-	# }
-
 	paste0(
 		if(print_colours){paste0("<span style=\"color:",x$color,"\">")},
 		"  ", x$component, " = list(\n",	
@@ -294,22 +215,3 @@ write_code_part <- function(x, print_colours) {
 		),collapse=", \n"),
 	"\n  )",if(print_colours){"</span>"},collapse="")
 }
-
-
-
-# cat(y)
-
-
-## TODO
-## equations for fixed factors
-## compress predictors in equation
-	## collapse_predictor option would make them all x
-
-# x<-list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual"))
-# make_equation(x)
-#  make_equation(dd$parameters, print_colours=FALSE)
-# # https://stackoverflow.com/questions/71616552/how-do-i-dynamically-change-label-text-color-of-r-shiny-radiobuttons-widget-when
-
-
-## ideas
-## shiny::runApp("/Users/joelpick/github/shinySim")

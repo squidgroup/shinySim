@@ -1,4 +1,3 @@
-
 #' @title prod_var
 #' @description produces variance
 #' @param means n/a
@@ -10,15 +9,10 @@ prod_var <- function(means,vcov){
 	
 	if(length(means)>2){
 		prod(vars + means^2) - prod(means)^2
-		# https://stats.stackexchange.com/questions/52646/variance-of-product-of-multiple-independent-random-variables
 	}else{
 		c <- vcov[lower.tri(vcov)]
 		prod(vars+means^2) + c^2 + 2*c*prod(means) - prod(means)^2
-		# https://stats.stackexchange.com/questions/15978/variance-of-product-of-dependent-variables
-		# https://math.stackexchange.com/questions/1889402/covariance-of-two-squared-not-zero-mean-random-variables
 	}
-	## this is an equation for variance of k dependent random variables centered on 0 - probably two complex to worry about
-	## https://stats.stackexchange.com/questions/60414/variance-of-product-of-k-correlated-random-variables
 }
 
 #' @title prod_means
@@ -27,8 +21,6 @@ prod_var <- function(means,vcov){
 #' @param vcov n/a
 #' @keywords internal
 prod_means <- function(means,vcov){
-	##https://www.physicsforums.com/threads/expectations-on-the-product-of-two-dependent-random-variables.276125/
-	
 	if(length(means)>2){
 		prod(means)
 	}else{
@@ -68,14 +60,6 @@ simVar <- function(parameters,data_structure){
 	param<-lapply(components[components!="intercept"],function(x)c(parameters[[x]], component=x, color=as.character(colors[x])))
 	names(param)<-components[components!="intercept"]
 	
-
-	
-	# known_predictors <- squid$known_predictors
-
-	# if(any(sapply(param, function(i) any(i$functions!="identity")))){
-	# 	message("This will be inaccurate with transformed variables (i.e. using the functions argument)")
-	# }
-
 	#makes sure all the components have the right names
 	for(i in 1:length(param)){
 		names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- rownames(param[[i]]$beta) <- param[[i]]$names
@@ -93,9 +77,7 @@ simVar <- function(parameters,data_structure){
 			names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- param[[i]]$names
 		}
 	}
-
-	# print("done fixed")
-
+	
 	covariate <- p_names[sapply(p_names, function(i) param[[i]]$covariate)]
 	if(length(covariate)>0){
 		for (i in covariate){
@@ -105,24 +87,12 @@ simVar <- function(parameters,data_structure){
 			names(param[[i]]$mean) <- colnames(param[[i]]$vcov) <- rownames(param[[i]]$vcov) <- param[[i]]$names
 		}
 	}
-# print("done covariate")
-	# if(!is.null(known_predictors)){
-	# 	param$known_predictors <- list(
-	# 		mean = colMeans(known_predictors[["predictors"]]),
-	# 		vcov = stats::cov(known_predictors[["predictors"]]),
-	# 		beta = known_predictors[["beta"]]
-	# 	)
-	# }
 
 	if("interactions" %in% names(param)){
 		
 		means1 <- do.call(c,c(lapply(p_names, function(i) param[[i]]$mean ), use.names=FALSE))
 
 		covs1 <- make_big_matrix(lapply(p_names, function(i) param[[i]]$vcov ))
-
-		## if interaction names are the same, then cov = var
-		## https://stats.stackexchange.com/questions/53380/variance-of-powers-of-a-random-variable
-		## Var(𝑋𝑛)=𝔼[𝑋2𝑛]−𝔼[𝑋𝑛]2 
 		int_names <- param[["interactions"]]$names
 		int_var <- lapply(strsplit(int_names,":"), function(j){
 			#For two way interactions, the expected means and variances take into account 
@@ -133,21 +103,14 @@ simVar <- function(parameters,data_structure){
 				)
 		})
 
-
 		param[["interactions"]]$vcov <- diag(sapply(int_var,function(x)x$cov), nrow=length(int_names))
 		param[["interactions"]]$mean <- sapply(int_var,function(x)x$mean)
 		names(param[["interactions"]]$mean) <- colnames(param[["interactions"]]$vcov) <- rownames(param[["interactions"]]$vcov) <- int_names
 	}
-	# print("done interactions")
 
 	means <- do.call(c,c(lapply(param, function(p) p$mean ), use.names=FALSE))
-	# print("done means")
-
 	covs <- make_big_matrix(lapply(param, function(p) p$vcov ))
-	# print("done covs")
-
 	betas <- do.call(rbind,lapply(param, function(p) p$beta ))
-	# print("done betas")
 
 	out <- list( 
 		## total
@@ -169,53 +132,6 @@ simVar <- function(parameters,data_structure){
 		)
 	 	
 	)
-	# print("done summaries")
-	# class(out) <- "squid_var"
 	return(out)
 
-
 }
-
-
-# library(squidSim)
-# squid_data <- simulate_population(
-# data_structure = make_structure(structure = "individual(10)", repeat_obs=2),
-#   parameters=list(
-#     individual=list(
-#  	  vcov=1.2
-#  	),
-#  	observation=list(
-#      names=c("temperature","rainfall", "wind"),
-#      mean = c(10,1 ,20),
-#      vcov =matrix(c(
-#        1, 0, 1,
-#        0,0.1,0,
-#        1, 0, 2
-#        ), nrow=3 ,ncol=3),
-#      beta =c(0.5,-3,0.4)
-#    ),
-#    residual=list(
-#      mean=10,
-#      vcov=1
-#    )
-#  )
-# )
-
-# colors <- make_colors(rownames(out$groups))
-# out<-simVar(squid_data$param)
-# par(mar=c(0,3,0,0))
-# barplot(matrix(out$groups$var,dimnames=list(c(rownames(out$groups)))), beside = FALSE, col=colors)
-
-# barplot(matrix(out$variables$var,dimnames=list(c(rownames(out$variables)))), beside = FALSE, col=colors[out$variables[,3]])
-
-# simulated_variance(list(intercept = 0,residual = list(vcov = matrix(1), beta=matrix(1), mean=0,group="residual",names="residual", fixed=FALSE, covariate=FALSE)))
-
-
-# devtools::install("/Users/joelpick/github/shinySim")
-# library(shinySim)
-# data_test <- squidSim::make_structure("sex(2)/individual(10)",repeat_obs=2,level_names=list(sex=c("F","M")))
-# shinySim(data.struc = data_test)
-
-#devtools::install_github("squidgroup/shinySim")
-
-# devtools::document("/Users/joelpick/github/shinySim")
