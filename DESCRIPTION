@@ -1,28 +1,40 @@
 Package: shinySim
-Title: shiny interface to the squidSim package
+Title: Shiny Interface to the squidSim Simulation Package
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Ed", "Ivimey-Cook", , "e.ivimeycook@gmail.com", role = c("aut", "cre")),
-    person("Joel", "Pick", , "joel.l.pick@gmail.com", role = "aut")
+    person("Ed", "Ivimey-Cook", , "e.ivimeycook@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-4910-0443")),
+    person("Joel", "Pick", , "joel.l.pick@gmail.com", role = "aut",
+           comment = c(ORCID = "0000-0002-6295-3742"))
   )
-Description: A shiny Gui interface to the squidSim package.
+Description: Provides a point-and-click Shiny interface to the squidSim
+    package for building structured simulations. Users define hierarchical
+    data structures, specify predictors and variance components across
+    levels, and generate simulated datasets without writing simulation code
+    by hand. The app returns both the simulated data and the equivalent
+    squidSim call.
 License: MIT + file LICENSE
-BugReports: https://github.com/squidgroup/shinySim/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
 Imports:
+    bs4Dash,
     bslib,
     dplyr,
     DT,
+    fresh,
+    grDevices,
+    prompter,
     shiny,
     shinyalert,
     shinyjs,
     shinyWidgets,
+    squidSim,
     stats,
     stringr,
     tippy,
-    utils,
-    grDevices,
-    prompter,
-    bs4Dash
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+    utils
+Remotes:
+    squidgroup/squidSim
+URL: https://github.com/squidgroup/shinySim
+BugReports: https://github.com/squidgroup/shinySim/issues
