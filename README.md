@@ -15,14 +15,6 @@ shinySim is a **point-and-click interface to the
 structured simulations — hierarchical data structures, predictors, and variance
 components across levels — without writing the simulation call by hand.
 
-Simulating structured data is something most people do rarely and under time
-pressure: checking whether a design has the power to detect an effect, generating
-a dataset to test an analysis pipeline, or teaching where variance actually sits
-in a mixed model. The syntax is the barrier, not the concept. shinySim moves that
-work into a UI, shows the variance decomposition as you build it, and hands back
-both the simulated dataset and the equivalent `squidSim` code — so the app is a
-way in, not a dependency.
-
 ## Features
 
 - **Build a data structure interactively.** Define nested and crossed levels,
