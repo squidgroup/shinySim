@@ -89,7 +89,7 @@ Issues with the underlying simulation engine belong upstream at
 
 ## Citation
 
-Please cite the package (adjust the year as needed):
+Please cite the package:
 
 > Ivimey-Cook, E. R., & Pick, J. L. (2026). *shinySim: Shiny interface to the
 > squidSim simulation package.* R package version 0.0.0.9000.
@@ -97,6 +97,11 @@ Please cite the package (adjust the year as needed):
 
 A machine-readable [`CITATION.cff`](CITATION.cff) is included, so GitHub's
 "Cite this repository" button gives formatted APA and BibTeX.
+
+## Contact
+
+Edward R. Ivimey-Cook — <e.ivimeycook@gmail.com> —
+[ORCID 0000-0003-4910-0443](https://orcid.org/0000-0003-4910-0443)
 
 ## License
 
