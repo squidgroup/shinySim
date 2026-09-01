@@ -2,9 +2,9 @@ Package: shinySim
 Title: Shiny Interface to the squidSim Simulation Package
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Ed", "Ivimey-Cook", , "e.ivimeycook@gmail.com", role = c("aut", "cre"),
+    person("Edward R.", "Ivimey-Cook", , "e.ivimeycook@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4910-0443")),
-    person("Joel", "Pick", , "joel.l.pick@gmail.com", role = "aut",
+    person("Joel L.", "Pick", , "joel.l.pick@gmail.com", role = "aut",
            comment = c(ORCID = "0000-0002-6295-3742"))
   )
 Description: Provides a point-and-click Shiny interface to the squidSim
