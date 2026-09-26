@@ -70,6 +70,25 @@ ui <- function() {
       flat = TRUE,
       # packages and functions
       shinyjs::useShinyjs(),
+      # copy text sent from the server to the clipboard; falls back to a hidden text box where the
+      # clipboard API isn't available (e.g. some IDE viewers)
+      shiny::tags$script(shiny::HTML("
+      Shiny.addCustomMessageHandler('copy_to_clipboard', function(text) {
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.focus(); ta.select();
+          var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(ta);
+          Shiny.setInputValue('copy_code_done', ok ? 'ok' : 'failed', {priority: 'event'});
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(function() {
+            Shiny.setInputValue('copy_code_done', 'ok', {priority: 'event'});
+          }, fallback);
+        } else { fallback(); }
+      });
+    ")),
       shiny::tags$head(
         shiny::tags$style(
           shiny::HTML("
@@ -481,6 +500,14 @@ ui <- function() {
             collapsible = FALSE,
             solidHeader = TRUE,
             title = "Simulation Code",
+            # copy the code as plain text, ready to paste into R (issue #26)
+            shiny::actionButton(
+              inputId = "copy_code",
+              label = "Copy code",
+              icon = shiny::icon("copy"),
+              class = "btn-sm btn-light",
+              style = "margin-bottom: 8px;"
+            ),
             shiny::uiOutput("output_code")
           )
         )

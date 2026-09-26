@@ -11,6 +11,102 @@ server <- function(input, output, session) {
 
   all_names <- shiny::reactiveValues(x = c("residual"))
 
+  # bumped whenever the Add form is (re)opened or cleared, so its tables are rebuilt with default
+  # values even when the number of variables hasn't changed (issue #24)
+  table_reset <- shiny::reactiveVal(0)
+  reset_tables <- function() table_reset(table_reset() + 1)
+
+  # a variance-covariance matrix squidSim can simulate from: symmetric, no negative variances,
+  # covariances no larger than the variances allow (positive semi-definite)
+  valid_vcov <- function(m) {
+    m <- suppressWarnings(matrix(as.numeric(as.matrix(m)), nrow(m)))
+    !anyNA(m) && isSymmetric(unname(m)) && all(eigen(m, symmetric = TRUE, only.values = TRUE)$values > -1e-8)
+  }
+
+  # names squidSim accepts for variables: letters, numbers and '_' only, and not a data-structure column
+  reserved_names <- c("intercept", "observation", "residual", "interactions")
+  bad_var_names <- function(nm) nm[!grepl("^[A-Za-z0-9_]+$", nm) | nm %in% c(colnames(data.struc), setdiff(reserved_names, "residual"))]
+  # component names end up as R code (e.g. `individual = list(...)`), so they must be valid names
+  bad_comp_name <- function(nm, group) !grepl("^[A-Za-z][A-Za-z0-9_]*$", nm) || (nm %in% reserved_names && nm != group)
+  # squidSim's rule for fixed categorical names: they must be the factor's levels, unless the levels
+  # are the numbers 1, 2, ..., k, in which case any names can be given (see squidSim's fill_parameters)
+  fixed_names_ok <- function(nm, group) {
+    lv <- unique(data.struc[[group]])
+    setequal(nm, as.character(lv)) ||
+      (length(nm) == length(lv) && is.numeric(lv) && identical(sort(as.numeric(lv)), as.numeric(seq_along(lv))))
+  }
+
+  # Safety net: before a change is accepted, write the code the app would print, run it through
+  # squidSim and compare squidSim's mean and variance with the app's. Returns NULL if all is well,
+  # otherwise the problem (squidSim's own error message where there is one).
+  squid_check <- function(p) {
+    tryCatch({
+      env <- new.env()
+      eval(parse(text = make_equation(p, print_colours = FALSE)$code), envir = env)
+      sim <- suppressMessages(suppressWarnings(
+        if (nrow(data.struc) > 0) {
+          squidSim::simulate_population(data_structure = data.struc, parameters = env$parameters)
+        } else {
+          squidSim::simulate_population(n = 100, parameters = env$parameters)
+        }
+      ))
+      # squidSim's reading of the printed code (sim$param), run through the same variance formula as
+      # the app. squidSim::simulated_variance() itself fails when every main effect in an interaction
+      # has a single variable (it uses sapply), so it isn't called here.
+      squid_param <- sim$param
+      for (nm in setdiff(names(squid_param), "intercept")) {
+        x <- squid_param[[nm]]
+        k <- length(x$names)
+        if (is.null(x$vcov)) x$vcov <- diag(k)
+        if (is.null(x$mean)) x$mean <- rep(0, k)
+        x$beta <- matrix(x$beta, nrow = k)
+        if (is.null(x$fixed)) x$fixed <- FALSE
+        if (is.null(x$covariate)) x$covariate <- FALSE
+        squid_param[[nm]] <- x
+      }
+      squid_total <- simVar(squid_param, data.struc)$total
+      app_total <- simVar(p, data.struc)$total
+      if (isTRUE(all.equal(unname(squid_total), unname(app_total), tolerance = 1e-6))) {
+        NULL
+      } else {
+        "the simulation code would give a different mean or variance from the one shown in the app"
+      }
+    }, error = function(e) conditionMessage(e))
+  }
+  squid_refuse <- function(problem) {
+    shinyalert::shinyalert(
+      title = "squidSim can't use this",
+      text = paste0("The change wasn't made because ", problem, "."),
+      type = "error"
+    )
+  }
+
+  # the interaction pickers must only offer variables that still exist (issue #20)
+  refresh_interaction_choices <- function() {
+    for (id in c("int_var1", "int_var2")) {
+      shinyWidgets::updatePickerInput(session = session, inputId = id, choices = all_names$x, selected = "")
+    }
+  }
+
+  # remove interactions that use a variable no longer in the model; returns the ones removed
+  drop_orphan_interactions <- function() {
+    ints <- param_list$x$interactions
+    if (is.null(ints)) return(character(0))
+    ok <- vapply(strsplit(ints$names, ":"), function(v) all(v %in% all_names$x), logical(1))
+    if (all(ok)) return(character(0))
+    removed <- ints$names[!ok]
+    if (!any(ok)) {
+      param_list$x["interactions"] <- NULL
+      component_list$x <- component_list$x[component_list$x$component != "interactions", ]
+    } else {
+      param_list$x$interactions <- list(
+        group = "interactions", names = ints$names[ok], beta = ints$beta[ok, , drop = FALSE],
+        mean = rep(0, sum(ok)), vcov = diag(sum(ok))
+      )
+    }
+    removed
+  }
+
   # table data
   name_tab <- shiny::reactiveValues(
     x = data.frame(Name = NA),
@@ -70,6 +166,10 @@ server <- function(input, output, session) {
       inputId = "input_variable_no",
       value = 1
     )
+    # a type picked for another group mustn't carry over (it could leave a fixed categorical
+    # name table from one group with the wrong number of rows for another)
+    shinyWidgets::updatePickerInput(session = session, inputId = "component_type", selected = "")
+    reset_tables()
     # show or hide group name box if interaction/observation is not picked.
     if (input$input_group %in% c("", "observation", "interactions")) {
       manyToggle(hide = c("component_type", "input_component_name", "interaction_panel"))
@@ -107,6 +207,7 @@ server <- function(input, output, session) {
       inputId = "input_variable_no",
       value = 1
     )
+    reset_tables()
 
     if (input$component_type == c("predictor")) {
       manyToggle(
@@ -147,14 +248,17 @@ server <- function(input, output, session) {
 
   ####### Tables based on input #######
 
-  shiny::observeEvent(input$input_variable_no, {
+  shiny::observeEvent(list(input$input_variable_no, table_reset()), {
     num_rows <- input$input_variable_no
+    shiny::req(is.numeric(num_rows), num_rows >= 1)
+    is_fixed <- identical(input$component_type, "fixed categorical") && input$input_group %in% colnames(data.struc)
+    if (is_fixed) {
+      # one row per level of the grouping factor, named after the levels (squidSim matches them)
+      fixed_levels <- as.character(unique(data.struc[[input$input_group]]))
+      num_rows <- length(fixed_levels)
+    }
 
-    name_tab$x <- data.frame(Name = if (input$component_type == "fixed categorical") {
-      as.character(unique(data.struc[[input$input_group]]))
-    } else {
-      rep("", num_rows)
-    })
+    name_tab$x <- data.frame(Name = if (is_fixed) fixed_levels else rep("", num_rows))
     beta_tab$x <- data.frame(Beta = rep(1, num_rows))
     mean_tab$x <- data.frame(Mean = rep(0, num_rows))
     vcov_update <- data.frame(diag(num_rows))
@@ -297,47 +401,150 @@ server <- function(input, output, session) {
   ####### What happens when add component button is pressed ######
 
   shiny::observeEvent(input$add_component, {
-    comp_name <- if (nchar(input$input_component_name) == 0) {
+    comp_group <- input$input_group
+    is_int <- identical(comp_group, "interactions")
+    # all interactions are kept together in squidSim's single 'interactions' component (issue #22)
+    comp_name <- if (is_int) {
+      "interactions"
+    } else if (nchar(input$input_component_name) == 0) {
       input$input_group
     } else {
       input$input_component_name
     }
-    comp_group <- input$input_group
+    # observation-level variables are always simulated predictors; ignore any type left over
+    # from a group picked earlier
+    comp_type <- if (comp_group == "observation") "predictor" else input$component_type
 
     int_names <- c(input$int_var1, input$int_var2)
+    int_name <- paste(int_names, collapse = ":")
+    same_int <- function(a, b) identical(sort(strsplit(a, ":")[[1]]), sort(strsplit(b, ":")[[1]]))
+    int_exists <- is_int && any(vapply(param_list$x$interactions$names, same_int, logical(1), b = int_name))
 
-    v_names <- unname(as.character(as.matrix(name_tab$x)))
+    # names typed in the table; blank ones get squidSim-style default names
+    n_var <- nrow(beta_tab$x)
+    v_names <- trimws(unname(as.character(as.matrix(name_tab$x))))
+    v_names[is.na(v_names)] <- ""
+    default_names <- paste0(comp_name, "_effect", if (n_var > 1) seq_len(n_var))
+    v_names_full <- ifelse(v_names == "", default_names, v_names)
 
-    if (comp_group == "interactions" && any(int_names == "")) {
-      shinyalert::shinyalert(
-        title = "Variables need to be specified ",
-        type = "error"
-      )
-    } else if (input$input_group == "") {
+    if (comp_group == "") {
       shinyalert::shinyalert(
         title = "Please select a group",
         type = "error"
       )
-    } else if (comp_name %in% component_list$x$component) {
+    } else if (is_int && any(int_names == "")) {
+      shinyalert::shinyalert(
+        title = "Choose both variables for the interaction",
+        type = "error"
+      )
+    } else if (int_exists) {
+      shinyalert::shinyalert(
+        title = "This interaction has already been added",
+        text = "Change its beta in the Update tab instead.",
+        type = "error"
+      )
+    } else if (!is_int && bad_comp_name(comp_name, comp_group)) {
+      shinyalert::shinyalert(
+        title = "Please choose a different component name",
+        text = "Use letters, numbers or '_', starting with a letter, and not 'intercept', 'observation', 'residual' or 'interactions'.",
+        type = "error"
+      )
+    } else if (!is_int && comp_name %in% component_list$x$component) {
       shinyalert::shinyalert(
         title = "Component already added",
         type = "error"
       )
-    } else if (any(v_names %in% all_names$x)) {
-      shinyalert::shinyalert(
-        title = "This name is already used",
-        type = "error"
-      )
-    } else if (input$component_type == "" & !(input$input_group %in% c("observation", "interactions"))) {
+    } else if (!is_int && comp_type == "") {
       shinyalert::shinyalert(
         title = "Please select a component type",
         type = "error"
       )
-    } else {
-      component_list$x <- data.frame(
-        component = c(component_list$x$component, comp_name),
-        group = c(component_list$x$group, comp_group)
+    } else if (!is_int && length(bad_var_names(v_names_full))) {
+      shinyalert::shinyalert(
+        title = "These names can't be used",
+        text = paste0(paste(bad_var_names(v_names_full), collapse = ", "),
+                      ": names can only use letters, numbers and '_', and can't be the name of a column in the data structure."),
+        type = "error"
       )
+    } else if (!is_int && comp_type == "fixed categorical" && !fixed_names_ok(v_names_full, comp_group)) {
+      shinyalert::shinyalert(
+        title = "Level names must match the data structure",
+        text = paste0("For a fixed categorical effect the names are the levels of '", comp_group, "': ",
+                      paste(unique(data.struc[[comp_group]]), collapse = ", "),
+                      " (they can only be renamed when the levels are numbered 1, 2, 3, ...)."),
+        type = "error"
+      )
+    } else if (anyNA(suppressWarnings(as.numeric(as.matrix(beta_tab$x)))) ||
+               (!is_int && comp_type %in% c("predictor", "random") && anyNA(suppressWarnings(as.numeric(as.matrix(mean_tab$x)))))) {
+      shinyalert::shinyalert(
+        title = "Every beta and mean needs a number",
+        type = "error"
+      )
+    } else if (!is_int && anyDuplicated(v_names_full)) {
+      # issue #25: every variable needs its own name
+      shinyalert::shinyalert(
+        title = "Each variable needs a different name",
+        text = paste("Repeated:", paste(unique(v_names_full[duplicated(v_names_full)]), collapse = ", ")),
+        type = "error"
+      )
+    } else if (!is_int && any(v_names_full %in% all_names$x)) {
+      shinyalert::shinyalert(
+        title = "This name is already used",
+        text = paste("Already used:", paste(v_names_full[v_names_full %in% all_names$x], collapse = ", ")),
+        type = "error"
+      )
+    } else if (!is_int && comp_type %in% c("predictor", "random") && !valid_vcov(vcov_tab$x)) {
+      shinyalert::shinyalert(
+        title = "The variance-covariance matrix isn't valid",
+        text = "Variances can't be negative, and each covariance must imply a correlation between -1 and 1 (|cov| no larger than the square root of the product of the two variances).",
+        type = "error"
+      )
+    } else if (!is_int && comp_type == "covariate" && !is.numeric(data.struc[[comp_group]])) {
+      # issue #23: squidSim uses the values of the grouping column itself, so they must be numbers
+      shinyalert::shinyalert(
+        title = "Covariates need a numeric column",
+        text = paste0("'", comp_group, "' in the data structure is not numeric, so it can't be used as a covariate. ",
+                      "Choose 'predictor' or 'fixed categorical' instead."),
+        type = "error"
+      )
+    } else {
+      # the component as squidSim will see it
+      if (is_int) {
+        # add this interaction to any already added
+        old <- param_list$x$interactions
+        n_int <- length(old$names) + 1
+        new_comp <- list(
+          group = "interactions",
+          names = c(old$names, int_name),
+          beta = rbind(old$beta, unname(as.matrix(beta_tab$x))[1, , drop = FALSE]),
+          mean = rep(0, n_int),
+          vcov = diag(n_int)
+        )
+      } else {
+        new_comp <- list(
+          group = comp_group,
+          beta = matrix(as.numeric(as.matrix(beta_tab$x)), ncol = 1),
+          mean = as.numeric(as.matrix(mean_tab$x)),
+          vcov = unname(as.matrix(vcov_tab$x)),
+          names = v_names_full,
+          fixed = comp_type == "fixed categorical",
+          covariate = comp_type == "covariate"
+        )
+      }
+      candidate <- param_list$x
+      candidate[[comp_name]] <- new_comp
+      problem <- squid_check(candidate)
+      if (!is.null(problem)) {
+        squid_refuse(problem)
+        return()
+      }
+
+      if (!comp_name %in% component_list$x$component) {
+        component_list$x <- data.frame(
+          component = c(component_list$x$component, comp_name),
+          group = c(component_list$x$group, comp_group)
+        )
+      }
 
       shinyWidgets::updatePickerInput(
         session = session,
@@ -345,32 +552,8 @@ server <- function(input, output, session) {
         choices = component_list$x$component
       )
 
-      # make squidSim parameter list
-      param_list$x[[comp_name]] <- list(
-        group = comp_group,
-        beta = unname(as.matrix(beta_tab$x)),
-        mean = as.numeric(as.matrix(mean_tab$x)),
-        vcov = unname(as.matrix(vcov_tab$x))
-      )
-
-      ## add in names if they are entered
-      param_list$x[[comp_name]]$names <-
-        if (comp_group == "interactions") {
-          paste0(input$int_var1, ":", input$int_var2)
-        } else if (!all(nchar(v_names) == 0)) {
-          v_names
-        } else {
-          paste0(comp_name, "_effect", if (input$input_variable_no > 1) {
-            1:nrow(beta_tab$x)
-          })
-        }
-
-      if (comp_group != "interactions") {
-        param_list$x[[comp_name]]$fixed <- input$component_type == "fixed categorical"
-        param_list$x[[comp_name]]$covariate <- input$component_type == "covariate"
-        v_names2 <- param_list$x[[comp_name]]$names
-        all_names$x <- c(all_names$x, v_names2)
-      }
+      param_list$x <- candidate
+      if (!is_int) all_names$x <- c(all_names$x, v_names_full)
 
       ## update equation
       output_list$x <- make_equation(param_list$x, print_colours = TRUE)
@@ -411,6 +594,7 @@ server <- function(input, output, session) {
         inputId = "input_group",
         selected = ""
       )
+      reset_tables()
     }
   })
 
@@ -446,7 +630,7 @@ server <- function(input, output, session) {
 
       if (component_type_edit %in% c("fixed categorical", "covariate")) {
         manyToggle(
-          show = c("beta_panel_edit", "name_panel_edit", "component_type_edit_print"),
+          show = c("beta_panel_edit", "name_panel_edit", "component_type_edit_div_print", "component_type_edit_print"),
           hide = c("vcov_panel_edit", "mean_panel_edit", "intercept_panel")
         )
       }
@@ -640,38 +824,92 @@ server <- function(input, output, session) {
   # update button updates components
   shiny::observeEvent(input$update_parameters, {
     update_comp <- input$choose_component
-
-    updates_names <- unname(as.character(as.matrix(name_tab$edit)))
-    # work out group name
-    update_group <- component_list$x$group[component_list$x$component == update_comp]
+    old <- param_list$x[[update_comp]]
 
     if (update_comp == "") {
       shinyalert::shinyalert(title = "Please select a component", type = "error")
+      return()
     } else if (update_comp == "intercept") {
+      if (!is.numeric(input$intercept_panel) || is.na(input$intercept_panel)) {
+        shinyalert::shinyalert(title = "The intercept needs a number", type = "error")
+        return()
+      }
       param_list$x[["intercept"]] <- input$intercept_panel
     } else {
-      # make squidSim parameter list
-      param_list$x[[update_comp]] <- list(
-        group = update_group,
-        beta = unname(as.matrix(beta_tab$edit)),
-        mean = as.numeric(as.matrix(mean_tab$edit)),
-        vcov = unname(as.matrix(vcov_tab$edit))
-      )
-
-      if (update_group != "interactions") {
-        param_list$x[[update_comp]]$fixed <- input$component_type == "fixed categorical"
-        param_list$x[[update_comp]]$covariate <- input$component_type == "covariate"
+      is_int <- update_comp == "interactions"
+      new_names <- trimws(unname(as.character(as.matrix(name_tab$edit))))
+      new_names[is.na(new_names) | new_names == ""] <- old$names[is.na(new_names) | new_names == ""]
+      other_names <- setdiff(all_names$x, old$names)
+      new_beta <- suppressWarnings(as.numeric(as.matrix(beta_tab$edit)))
+      new_mean <- suppressWarnings(as.numeric(as.matrix(mean_tab$edit)))
+      same_int <- function(a, b) identical(sort(strsplit(a, ":")[[1]]), sort(strsplit(b, ":")[[1]]))
+      int_dup <- is_int && any(vapply(seq_along(new_names), function(i)
+        any(vapply(new_names[-i], same_int, logical(1), b = new_names[i])), logical(1)))
+      refuse <- function(title, text = "") {
+        shinyalert::shinyalert(title = title, text = text, type = "error")
       }
 
-      ## add in names if they are entered
-      param_list$x[[update_comp]]$names <-
-        if (!all(nchar(as.matrix(name_tab$edit)) == 0)) {
-          unname(as.character(as.matrix(name_tab$edit)))
-        } else {
-          paste0(update_comp, "_effect", if (input$input_variable_no > 1) {
-            1:nrow(beta_tab$edit)
-          })
+      if (anyNA(new_beta) || (!is_int && !isTRUE(old$fixed) && !isTRUE(old$covariate) && anyNA(new_mean))) {
+        return(refuse("Every beta and mean needs a number"))
+      }
+      if (is_int) {
+        parts <- strsplit(new_names, ":")
+        bad <- new_names[!vapply(parts, function(v) length(v) >= 2 && all(v %in% all_names$x), logical(1))]
+        if (length(bad)) {
+          return(refuse("Interaction names must join existing variables with ':'", paste("Not valid:", paste(bad, collapse = ", "))))
         }
+        if (int_dup) return(refuse("The same interaction appears twice"))
+      } else if (isTRUE(old$fixed) && !identical(new_names, old$names) && !fixed_names_ok(new_names, old$group)) {
+        # squidSim matches fixed categorical names to the levels in the data structure
+        return(refuse("Level names can't be changed",
+          "For a fixed categorical effect the names are the levels in the data structure (they can only be renamed when the levels are numbered 1, 2, 3, ...)."))
+      } else if (length(bad_var_names(setdiff(new_names, "residual")))) {
+        return(refuse("These names can't be used", paste0(paste(bad_var_names(setdiff(new_names, "residual")), collapse = ", "),
+          ": names can only use letters, numbers and '_', and can't be the name of a column in the data structure.")))
+      } else if (anyDuplicated(new_names)) {
+        return(refuse("Each variable needs a different name", paste("Repeated:", paste(unique(new_names[duplicated(new_names)]), collapse = ", "))))
+      } else if (!isTRUE(old$fixed) && !isTRUE(old$covariate) && !valid_vcov(vcov_tab$edit)) {
+        return(refuse("The variance-covariance matrix isn't valid",
+          "Variances can't be negative, and each covariance must imply a correlation between -1 and 1 (|cov| no larger than the square root of the product of the two variances)."))
+      } else if (any(new_names %in% other_names)) {
+        return(refuse("This name is already used", paste("Already used:", paste(new_names[new_names %in% other_names], collapse = ", "))))
+      }
+
+      # start from the component as it was, so its group and type (fixed categorical, covariate,
+      # predictor) are kept - they were previously taken from the Add tab's type box
+      upd <- old
+      upd$beta <- matrix(new_beta, ncol = 1)
+      upd$names <- new_names
+      if (is_int) {
+        upd$mean <- rep(0, length(new_names))
+        upd$vcov <- diag(length(new_names))
+      } else {
+        upd$mean <- new_mean
+        upd$vcov <- unname(as.matrix(vcov_tab$edit))
+      }
+      candidate <- param_list$x
+      candidate[[update_comp]] <- upd
+
+      renamed <- !is_int && !identical(new_names, old$names)
+      if (renamed && !is.null(candidate$interactions)) {
+        # renamed variables: follow the new names into any interactions that use them
+        lookup <- stats::setNames(new_names, old$names)
+        candidate$interactions$names <- vapply(strsplit(candidate$interactions$names, ":"), function(v) {
+          v[v %in% names(lookup)] <- lookup[v[v %in% names(lookup)]]
+          paste(v, collapse = ":")
+        }, character(1))
+      }
+
+      problem <- squid_check(candidate)
+      if (!is.null(problem)) {
+        squid_refuse(problem)
+        return()
+      }
+      param_list$x <- candidate
+      if (renamed) {
+        all_names$x <- c(other_names, new_names)
+        refresh_interaction_choices()
+      }
     }
 
     ## update equation
@@ -730,11 +968,23 @@ server <- function(input, output, session) {
   ####### Pressing Delete button #######
   shiny::observeEvent(input$delete_parameters, {
     delete_comp <- input$choose_component
+    if (delete_comp %in% c("", "intercept", "residual")) return()
     delete_names <- param_list$x[[delete_comp]]$names
 
-    all_names$x <- all_names$x[!all_names$x %in% delete_names]
+    if (delete_comp != "interactions") all_names$x <- all_names$x[!all_names$x %in% delete_names]
 
     param_list$x[delete_comp] <- NULL
+
+    # interactions that used a deleted variable can't be simulated any more (issue #20)
+    removed <- drop_orphan_interactions()
+    if (length(removed)) {
+      shinyalert::shinyalert(
+        title = "Interactions removed",
+        text = paste("These used a deleted variable:", paste(removed, collapse = ", ")),
+        type = "warning"
+      )
+    }
+    refresh_interaction_choices()
 
     output_list$x <- make_equation(param_list$x, print_colours = TRUE)
 
@@ -772,6 +1022,8 @@ server <- function(input, output, session) {
     v <- info$value
 
     vcov_tab$x[i, j] <<- DT::coerceValue(v, vcov_tab$x[i, j])
+    # a covariance applies both ways: keep the matrix symmetric, as squidSim requires
+    if (i != j && j <= nrow(vcov_tab$x)) vcov_tab$x[j, i] <<- vcov_tab$x[i, j]
     DT::replaceData(proxy_vcov, vcov_tab$x, resetPaging = FALSE)
     str(vcov_tab$x)
   })
@@ -811,7 +1063,7 @@ server <- function(input, output, session) {
     v <- info$value
 
     name_tab$edit[i, j] <<- DT::coerceValue(v, name_tab$edit[i, j])
-    DT::replaceData(DT::dataTableProxy("name_table"), name_tab$edit, resetPaging = FALSE)
+    DT::replaceData(DT::dataTableProxy("name_table_edit"), name_tab$edit, resetPaging = FALSE)
   })
 
   # record the data edit
@@ -823,6 +1075,7 @@ server <- function(input, output, session) {
     v <- info$value
 
     vcov_tab$edit[i, j] <<- DT::coerceValue(v, vcov_tab$edit[i, j])
+    if (i != j && j <= nrow(vcov_tab$edit)) vcov_tab$edit[j, i] <<- vcov_tab$edit[i, j]
     DT::replaceData(proxy_vcov, vcov_tab$edit, resetPaging = FALSE)
     str(vcov_tab$edit)
   })
@@ -860,6 +1113,7 @@ server <- function(input, output, session) {
     req(input$add_update_tab)
     if(input$add_update_tab == "Add") {
       shinyjs::reset("add_tab_container")
+      reset_tables()
     }
     if(input$add_update_tab == "Update") {
       shinyjs::reset("update_tab_container")
@@ -872,6 +1126,18 @@ server <- function(input, output, session) {
 
   output$output_component <- renderText({
     output_list$x$component
+  })
+
+  # copy the simulation code as plain text (issue #26)
+  shiny::observeEvent(input$copy_code, {
+    session$sendCustomMessage("copy_to_clipboard", make_equation(param_list$x, print_colours = FALSE)$code)
+  })
+  shiny::observeEvent(input$copy_code_done, {
+    if (identical(input$copy_code_done, "ok")) {
+      shiny::showNotification("Code copied - paste it into R", type = "message", duration = 3)
+    } else {
+      shiny::showNotification("Couldn't copy automatically - select the code and copy it instead", type = "warning")
+    }
   })
 
   output$output_code <- renderUI({

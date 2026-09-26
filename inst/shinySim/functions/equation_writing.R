@@ -181,17 +181,27 @@ write_code_part <- function(x, print_colours) {
 	if(x$component=="interactions"){
 		x$covariate <- x$fixed <- FALSE
 	}
+	# names squidSim gives a component when none are supplied (see squidSim's fill_parameters)
+	k <- length(x$names)
+	default_names <- paste0(x$component, if(!identical(x$group, "residual")) "_effect", if(k>1) seq_len(k))
+	# print group and names whenever they differ from squidSim's defaults - previously they were
+	# left out for fixed/covariate components and guessed with grepl, so the code could fail or bind
+	# interactions to the wrong variable
+	show_group <- x$component!="interactions" && x$component != x$group
+	show_names <- x$component=="interactions" || x$fixed || !identical(as.character(x$names), default_names)
+
 	if(x$component=="interactions"|| x$covariate || x$fixed){
 		show_beta <- TRUE
-		show_names <- if(x$covariate) FALSE else TRUE
-		show_group <- show_mean <- show_vcv <- FALSE
+		show_mean <- show_vcv <- FALSE
 	}else{
-		show_group <- x$component !=	x$group
-		show_names <- !all(grepl("residual",x$group)) & !all(grepl(paste0(x$component,"_effect"),x$names))
 		show_beta <- any(x$beta!=1)
 		show_mean <- any(x$mean!=0)
-		random <- !show_beta & !show_mean
-		show_vcv <- x$group=="residual"|random|(!all(diag(x$vcov)==1) & !all(x$vcov[lower.tri(x$vcov)]==0))
+		# squidSim needs beta or vcov for every component, so print vcov whenever beta isn't printed
+		# (previously a component with beta 1, variance 1 and a non-zero mean printed neither)
+		random <- !show_beta
+		# print vcov whenever it differs from squidSim's default (variances of 1, no covariances), otherwise
+		# the printed code would simulate different variances from the ones entered in the app
+		show_vcv <- x$group=="residual"|random|(!all(diag(x$vcov)==1) | !all(x$vcov[lower.tri(x$vcov)]==0))
 		show_vcv_mat <- !all(x$vcov[lower.tri(x$vcov)]==0)
 	}
 
