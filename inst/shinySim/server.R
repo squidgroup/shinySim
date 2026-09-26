@@ -32,8 +32,14 @@ server <- function(input, output, session) {
   # are the numbers 1, 2, ..., k, in which case any names can be given (see squidSim's fill_parameters)
   fixed_names_ok <- function(nm, group) {
     lv <- unique(data.struc[[group]])
-    setequal(nm, as.character(lv)) ||
-      (length(nm) == length(lv) && is.numeric(lv) && identical(sort(as.numeric(lv)), as.numeric(seq_along(lv))))
+    # squidSim's own test for numbered levels (also true for text "1", "2", ...)
+    setequal(nm, as.character(lv)) || (length(nm) == length(lv) && all(lv %in% seq_along(lv)))
+  }
+  # levels of a grouping factor in the order squidSim uses them (for numbered levels, beta i is
+  # level i) and the app's variance calculation (table() order)
+  sorted_levels <- function(x) {
+    lv <- unique(x)
+    if (all(lv %in% seq_along(lv))) as.character(sort(as.numeric(as.character(lv)))) else as.character(sort(lv))
   }
 
   # Safety net: before a change is accepted, write the code the app would print, run it through
@@ -254,7 +260,7 @@ server <- function(input, output, session) {
     is_fixed <- identical(input$component_type, "fixed categorical") && input$input_group %in% colnames(data.struc)
     if (is_fixed) {
       # one row per level of the grouping factor, named after the levels (squidSim matches them)
-      fixed_levels <- as.character(unique(data.struc[[input$input_group]]))
+      fixed_levels <- sorted_levels(data.struc[[input$input_group]])
       num_rows <- length(fixed_levels)
     }
 
