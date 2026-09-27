@@ -25,8 +25,7 @@ components across levels — without writing the simulation call by hand.
   so what you are building stays legible.
 - **Inspect simulated variances.** Check that the realised variance components
   match what you asked for before you commit to a design.
-- **Get the code back.** The equivalent `squidSim` call is returned alongside the
-  data, so simulations remain reproducible outside the app.
+- **Get the code back.** The equivalent `squidSim` call is returned as code you can copy so simulations remain reproducible outside the app.
 - **Runs locally.** Nothing is uploaded anywhere.
 
 ## Installation
