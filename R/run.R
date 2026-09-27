@@ -1,6 +1,6 @@
 #' @title shinySim
 #' @description shiny interface to the squidSim package. 
-#' @return A simulated dataframe
+#' @return squidSim code
 #' @param data.struc datastructure argument created using squidSim or other.
 #' @examples
 #' \dontrun{
