@@ -25,7 +25,9 @@ server <- function(input, output, session) {
 
   # names squidSim accepts for variables: letters, numbers and '_' only, and not a data-structure column
   reserved_names <- c("intercept", "observation", "residual", "interactions")
-  bad_var_names <- function(nm) nm[!grepl("^[A-Za-z0-9_]+$", nm) | nm %in% c(colnames(data.struc), setdiff(reserved_names, "residual"))]
+  # "y" (the response) and "squid_pop" are columns squidSim adds to the simulated data
+  bad_var_names <- function(nm) nm[!grepl("^[A-Za-z0-9_]+$", nm) |
+    nm %in% c(colnames(data.struc), setdiff(reserved_names, "residual"), "y", "squid_pop")]
   # component names end up as R code (e.g. `individual = list(...)`), so they must be valid names
   bad_comp_name <- function(nm, group) !grepl("^[A-Za-z][A-Za-z0-9_]*$", nm) || (nm %in% reserved_names && nm != group)
   # squidSim's rule for fixed categorical names: they must be the factor's levels, unless the levels
@@ -469,7 +471,7 @@ server <- function(input, output, session) {
       shinyalert::shinyalert(
         title = "These names can't be used",
         text = paste0(paste(bad_var_names(v_names_full), collapse = ", "),
-                      ": names can only use letters, numbers and '_', and can't be the name of a column in the data structure."),
+                      ": names can only use letters, numbers and '_', and can't be the name of a column in the data structure, 'y' or 'squid_pop'."),
         type = "error"
       )
     } else if (!is_int && comp_type == "fixed categorical" && !fixed_names_ok(v_names_full, comp_group)) {
@@ -871,7 +873,7 @@ server <- function(input, output, session) {
           "For a fixed categorical effect the names are the levels in the data structure (they can only be renamed when the levels are numbered 1, 2, 3, ...)."))
       } else if (length(bad_var_names(setdiff(new_names, "residual")))) {
         return(refuse("These names can't be used", paste0(paste(bad_var_names(setdiff(new_names, "residual")), collapse = ", "),
-          ": names can only use letters, numbers and '_', and can't be the name of a column in the data structure.")))
+          ": names can only use letters, numbers and '_', and can't be the name of a column in the data structure, 'y' or 'squid_pop'.")))
       } else if (anyDuplicated(new_names)) {
         return(refuse("Each variable needs a different name", paste("Repeated:", paste(unique(new_names[duplicated(new_names)]), collapse = ", "))))
       } else if (!isTRUE(old$fixed) && !isTRUE(old$covariate) && !valid_vcov(vcov_tab$edit)) {
