@@ -17,15 +17,21 @@ components across levels — without writing the simulation call by hand.
 
 ## Features
 
-- **Build a data structure interactively.** Define nested and crossed levels,
-  sample sizes, and repeat observations, or pass in a structure you already have.
-- **Set variance components per level.** Specify predictors, betas, and
-  (co)variances for each grouping factor.
+- **Start from your data structure.** Pass in a structure made with
+  `squidSim::make_structure()` (or any data frame of grouping factors) and build
+  the simulation on its levels.
+- **Set variance components per level.** Add random effects, predictors, fixed
+  (categorical) effects, covariates and interactions, with their betas, means and
+  (co)variances.
 - **See the equations as you go.** The app writes out the model being simulated,
   so what you are building stays legible.
-- **Inspect simulated variances.** Check that the realised variance components
-  match what you asked for before you commit to a design.
-- **Get the code back.** The equivalent `squidSim` call is returned as code you can copy so simulations remain reproducible outside the app.
+- **See the expected variance decomposition.** The app calculates the expected
+  mean and variance of the response, and how the variance divides among
+  hierarchical levels and predictors. This includes the covariances that fixed
+  effects, interactions and covariates create. Each time you add or update a
+  component, the app also runs a quick squidSim simulation and warns you if its
+  mean or variance differs from the expected values by more than 10%.
+- **Get the code back.** The equivalent `squidSim` call is shown as code you can copy, so simulations remain reproducible outside the app. Run it with `squidSim::simulate_population()` to generate the data.
 - **Runs locally.** Nothing is uploaded anywhere.
 
 ## Installation
