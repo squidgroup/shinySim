@@ -462,6 +462,8 @@ ui <- function() {
                 width = 12,
                 splitLayout(
                   cellWidths = c("50%", "50%"),
+                  # let the headings wrap rather than overlap in narrow windows
+                  cellArgs = list(style = "white-space: normal; padding-right: 8px;"),
                   "Contribution of different hierarchical levels:",
                   "Contribution of different predictors:"
                 )
@@ -482,8 +484,8 @@ ui <- function() {
                 width = 12,
                 splitLayout(
                   cellWidths = c("50%", "50%"),
-                  shiny::plotOutput("output_variance_mid_plot", height = "200px", width = "50%"),
-                  shiny::plotOutput("output_variance_right_plot", height = "200px", width = "50%")
+                  shiny::plotOutput("output_variance_mid_plot", height = "250px", width = "100%"),
+                  shiny::plotOutput("output_variance_right_plot", height = "250px", width = "100%")
                 )
               )
             )

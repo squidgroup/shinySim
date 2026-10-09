@@ -8,32 +8,30 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-6295-3742"))
   )
 Description: Provides a point-and-click Shiny interface to the squidSim
-    package for building structured simulations. Users define hierarchical
-    data structures, specify predictors and variance components across
-    levels, and generate simulated datasets without writing simulation code
-    by hand. The app returns both the simulated data and the equivalent
-    squidSim call.
+    package for building structured simulations. Users supply a hierarchical
+    data structure, specify predictors and variance components across its
+    levels, and get the equivalent squidSim code without writing it by hand,
+    together with the model equation and the expected mean and variance
+    decomposition of the response. The code can be copied into R to simulate
+    datasets with squidSim.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     bs4Dash,
-    bslib,
-    dplyr,
     DT,
     fresh,
+    graphics,
     grDevices,
+    later,
     prompter,
     shiny,
     shinyalert,
     shinyjs,
     shinyWidgets,
     squidSim,
-    stats,
-    stringr,
-    tippy,
-    utils
+    stats
 Remotes:
     squidgroup/squidSim
 URL: https://github.com/squidgroup/shinySim

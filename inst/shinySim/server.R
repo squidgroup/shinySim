@@ -3,6 +3,11 @@
 server <- function(input, output, session) {
   ####### Reactive values and dataframes and inital startup ######
 
+  # data structure passed in by shinySim() (an empty data frame when the app is run without one)
+  data.struc <- shiny::getShinyOption("shinySim.data.struc", default = data.frame())
+  data.struc <- if (is.null(data.struc)) data.frame() else as.data.frame(data.struc)
+  session_opened()
+
   # list of added components as well as interactions
   component_list <- shiny::reactiveValues(x = data.frame(
     component = c("intercept", "residual"),
@@ -37,12 +42,7 @@ server <- function(input, output, session) {
     # squidSim's own test for numbered levels (also true for text "1", "2", ...)
     setequal(nm, as.character(lv)) || (length(nm) == length(lv) && all(lv %in% seq_along(lv)))
   }
-  # levels of a grouping factor in the order squidSim uses them (for numbered levels, beta i is
-  # level i) and the app's variance calculation (table() order)
-  sorted_levels <- function(x) {
-    lv <- unique(x)
-    if (all(lv %in% seq_along(lv))) as.character(sort(as.numeric(as.character(lv)))) else as.character(sort(lv))
-  }
+  # sorted_levels() (levels in the order squidSim uses them) is in functions/simulated_variances.R
 
   # Safety net: before a change is accepted, write the code the app would print, run it through
   # squidSim and compare squidSim's mean and variance with the app's. Returns NULL if all is well,
@@ -81,6 +81,56 @@ server <- function(input, output, session) {
       }
     }, error = function(e) conditionMessage(e))
   }
+  # Independent check of the mean and variance shown in the app (squid_check above only checks that
+  # the printed code matches the app's parameters): simulate a large population with squidSim from
+  # the printed code and compare its mean and variance with the app's. The data structure is repeated
+  # with the groups of simulated effects renumbered in each copy, so random effects have many levels,
+  # while fixed categorical and covariate columns keep their values (same proportions and values).
+  # Returns NULL if they agree, otherwise a message. Not used to refuse changes, only to warn.
+  mc_check <- function(p, n_target = 20000) {
+    tryCatch({
+      env <- new.env()
+      eval(parse(text = make_equation(p, print_colours = FALSE)$code), envir = env)
+      if (nrow(data.struc) > 0) {
+        comps <- p[setdiff(names(p), c("intercept", "interactions"))]
+        struc_groups <- unique(unlist(lapply(comps, function(x) if (isTRUE(x$fixed) || isTRUE(x$covariate)) x$group)))
+        sim_groups <- setdiff(unique(unlist(lapply(comps, function(x) if (!isTRUE(x$fixed) && !isTRUE(x$covariate)) x$group))),
+                              c("observation", "residual"))
+        # a column used both for simulated effects and as a fixed/covariate column can't be renumbered
+        if (any(sim_groups %in% struc_groups)) return(NULL)
+        k <- ceiling(n_target / nrow(data.struc))
+        big <- do.call(rbind, lapply(seq_len(k), function(r) {
+          d <- data.struc
+          for (cl in sim_groups) d[[cl]] <- paste(r, d[[cl]], sep = "_")
+          d
+        }))
+        for (cl in sim_groups) big[[cl]] <- as.integer(factor(big[[cl]]))
+        sim <- suppressMessages(suppressWarnings(
+          squidSim::simulate_population(data_structure = big, parameters = env$parameters)
+        ))
+      } else {
+        sim <- suppressMessages(suppressWarnings(
+          squidSim::simulate_population(n = n_target, parameters = env$parameters)
+        ))
+      }
+      y <- as.vector(sim$y[[1]])
+      app <- simVar(p, data.struc)$total
+      sd_app <- sqrt(max(app[["var"]], 0))
+      if (abs(mean(y) - app[["mean"]]) > 0.1 * sd_app + 1e-8 ||
+          abs(stats::var(y) - app[["var"]]) > 0.1 * app[["var"]] + 1e-8) {
+        paste0("A test simulation with squidSim gave mean ", signif(mean(y), 3), " and variance ",
+               signif(stats::var(y), 3), ", which differ from the values shown (", signif(app[["mean"]], 3),
+               " and ", signif(app[["var"]], 3), "). The expected values shown may be inaccurate.")
+      } else {
+        NULL
+      }
+    }, error = function(e) NULL)
+  }
+  mc_warn <- function(p) {
+    problem <- mc_check(p)
+    if (!is.null(problem)) shiny::showNotification(problem, type = "warning", duration = 15)
+  }
+
   squid_refuse <- function(problem) {
     shinyalert::shinyalert(
       title = "squidSim can't use this",
@@ -89,10 +139,30 @@ server <- function(input, output, session) {
     )
   }
 
-  # the interaction pickers must only offer variables that still exist (issue #20)
+  # the interaction pickers must only offer variables that still exist (issue #20). They are grouped
+  # by component and labelled, so it is clear what each one is: levels of a fixed categorical effect
+  # (e.g. 'M' gives a slope for males only) and the residual (an interaction with the residual makes
+  # the residual variance depend on a variable) are valid squidSim interaction terms
+  interaction_choices <- function() {
+    comps <- setdiff(order_components(names(param_list$x)), c("intercept", "interactions"))
+    choices <- lapply(comps, function(i) as.list(param_list$x[[i]]$names))
+    names(choices) <- vapply(comps, function(i) {
+      x <- param_list$x[[i]]
+      if (i == "residual") {
+        "residual (heterogeneous residual variance)"
+      } else if (isTRUE(x$fixed)) {
+        paste0(i, " (levels of ", x$group, ")")
+      } else if (isTRUE(x$covariate)) {
+        paste0(i, " (covariate)")
+      } else {
+        i
+      }
+    }, character(1))
+    choices
+  }
   refresh_interaction_choices <- function() {
     for (id in c("int_var1", "int_var2")) {
-      shinyWidgets::updatePickerInput(session = session, inputId = id, choices = all_names$x, selected = "")
+      shinyWidgets::updatePickerInput(session = session, inputId = id, choices = interaction_choices(), selected = "")
     }
   }
 
@@ -165,6 +235,9 @@ server <- function(input, output, session) {
       choices = c(colnames(data.struc), "observation", "interactions")
     )
   })
+
+  # keep the interaction pickers in step with the model (on start up and after every change)
+  shiny::observe(refresh_interaction_choices())
 
   ####### Adding in components #######
 
@@ -566,22 +639,11 @@ server <- function(input, output, session) {
       ## update equation
       output_list$x <- make_equation(param_list$x, print_colours = TRUE)
       var_list$x <- simVar(param_list$x, data.struc)
+      mc_warn(param_list$x)
 
-      ## restore everything
+      ## restore everything (the interaction pickers are refreshed by their observer)
       manyToggle(hide = c("component_type", "input_variable_no", "name_panel", "mean_panel", "vcov_panel", "beta_panel"))
 
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "int_var1",
-        choices = all_names$x,
-        selected = ""
-      )
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "int_var2",
-        choices = all_names$x,
-        selected = ""
-      )
       shinyWidgets::updatePickerInput(
         session = session,
         inputId = "component_type",
@@ -914,16 +976,14 @@ server <- function(input, output, session) {
         return()
       }
       param_list$x <- candidate
-      if (renamed) {
-        all_names$x <- c(other_names, new_names)
-        refresh_interaction_choices()
-      }
+      if (renamed) all_names$x <- c(other_names, new_names)
     }
 
     ## update equation
     output_list$x <- make_equation(param_list$x, print_colours = TRUE)
 
     var_list$x <- simVar(param_list$x, data.struc)
+    mc_warn(param_list$x)
 
     shinyjs::hide("component_type_edit_print")
     shinyjs::hide("name_panel_edit")
@@ -992,7 +1052,6 @@ server <- function(input, output, session) {
         type = "warning"
       )
     }
-    refresh_interaction_choices()
 
     output_list$x <- make_equation(param_list$x, print_colours = TRUE)
 
@@ -1033,7 +1092,6 @@ server <- function(input, output, session) {
     # a covariance applies both ways: keep the matrix symmetric, as squidSim requires
     if (i != j && j <= nrow(vcov_tab$x)) vcov_tab$x[j, i] <<- vcov_tab$x[i, j]
     DT::replaceData(proxy_vcov, vcov_tab$x, resetPaging = FALSE)
-    str(vcov_tab$x)
   })
 
   # record the data edit
@@ -1046,7 +1104,6 @@ server <- function(input, output, session) {
 
     beta_tab$x[i, j] <<- DT::coerceValue(v, beta_tab$x[i, j])
     DT::replaceData(proxy_beta, beta_tab$x, resetPaging = FALSE)
-    str(beta_tab$x)
   })
 
   # record the data edit
@@ -1059,7 +1116,6 @@ server <- function(input, output, session) {
 
     mean_tab$x[i, j] <<- DT::coerceValue(v, mean_tab$x[i, j])
     DT::replaceData(proxy_mean, mean_tab$x, resetPaging = FALSE)
-    str(mean_tab$x)
   })
 
   # record the data edit
@@ -1085,7 +1141,6 @@ server <- function(input, output, session) {
     vcov_tab$edit[i, j] <<- DT::coerceValue(v, vcov_tab$edit[i, j])
     if (i != j && j <= nrow(vcov_tab$edit)) vcov_tab$edit[j, i] <<- vcov_tab$edit[i, j]
     DT::replaceData(proxy_vcov, vcov_tab$edit, resetPaging = FALSE)
-    str(vcov_tab$edit)
   })
 
   # record the data edit
@@ -1098,7 +1153,6 @@ server <- function(input, output, session) {
 
     beta_tab$edit[i, j] <<- DT::coerceValue(v, beta_tab$edit[i, j])
     DT::replaceData(proxy_beta, beta_tab$edit, resetPaging = FALSE)
-    str(beta_tab$edit)
   })
 
   # record the data edit
@@ -1111,7 +1165,6 @@ server <- function(input, output, session) {
 
     mean_tab$edit[i, j] <<- DT::coerceValue(v, mean_tab$edit[i, j])
     DT::replaceData(proxy_mean, mean_tab$edit, resetPaging = FALSE)
-    str(mean_tab$edit)
   })
 
   ####### Outputs to display #######
@@ -1133,7 +1186,7 @@ server <- function(input, output, session) {
   })
 
   output$output_component <- renderText({
-    output_list$x$component
+    output_list$x$components
   })
 
   # copy the simulation code as plain text (issue #26)
@@ -1154,29 +1207,30 @@ server <- function(input, output, session) {
 
   output$output_variance <- renderText({
     paste(
-      "Grand Mean:", var_list$x$total["mean"], "&emsp;",
-      "Grand Variance:", var_list$x$total["var"]
+      "Grand Mean:", round(var_list$x$total[["mean"]], 3), "&emsp;",
+      "Grand Variance:", round(var_list$x$total[["var"]], 3)
     )
   })
 
   output$output_variance_mid_tab <- shiny::renderTable(var_list$x$groups, rownames = TRUE)
 
+  # plot size from the browser, with a floor: while the layout settles the plot area can be reported
+  # as a few pixels, and shiny's own device setup then fails with "figure margins too large"
+  plot_size <- function(id, dim) function() max(session$clientData[[paste0("output_", id, "_", dim)]], 150)
+
   output$output_variance_mid_plot <- shiny::renderPlot({
-    par(mar = c(1, 2, 1, 0.5), bg = NA)
-    barplot(matrix(var_list$x$groups$var, dimnames = list(c(rownames(var_list$x$groups)))),
-            beside = FALSE,
-            col = make_colors(rownames(var_list$x$groups)))
-  })
+    groups <- var_list$x$groups
+    variance_barplot(groups$var, rownames(groups), make_colors(rownames(groups)))
+  }, width = plot_size("output_variance_mid_plot", "width"), height = plot_size("output_variance_mid_plot", "height"))
 
   output$output_variance_right_tab <- shiny::renderTable(var_list$x$variables[, 1:2], rownames = TRUE)
 
   output$output_variance_right_plot <- shiny::renderPlot({
-    par(mar = c(1, 2, 1, 0.5), bg = NA)
-    barplot(matrix(var_list$x$variables$var, 
-                   dimnames = list(c(rownames(var_list$x$variables)))),
-            beside = FALSE, 
-            col = make_colors(rownames(var_list$x$groups))[var_list$x$variables[, 3]])
-  })
+    vars <- var_list$x$variables
+    group_colors <- make_colors(rownames(var_list$x$groups))
+    variance_barplot(vars$var, rownames(vars), group_colors[vars[, 3]],
+                     legend_names = names(group_colors), legend_colors = group_colors)
+  }, width = plot_size("output_variance_right_plot", "width"), height = plot_size("output_variance_right_plot", "height"))
 
   # praising action button + logo
   shiny::observeEvent(input$citeme, {
@@ -1206,8 +1260,9 @@ server <- function(input, output, session) {
     )
   })
 
-  # stop app when sesssion ends
+  # stop the app when the last browser tab is closed, but not when the page is refreshed (the
+  # refreshed page opens a new session within the grace period, see session_closed() in global.R)
   session$onSessionEnded(function() {
-    stopApp()
+    session_closed()
   })
 }

@@ -26,9 +26,13 @@ order_components <- function(components){
 make_colors <- function(components){
  	colors <- rep(NA,length(components))
 	names(colors) <- components
-	colors[c("intercept","residual")] <- palette.colors()[1:2]
-	# colors["observation"] <- palette.colors()[3]
-	colors[!names(colors) %in% c("intercept","residual") ] <- palette.colors()[4:(3+sum(!names(colors)%in% c("intercept","residual") ))]
+	colors[c("intercept","residual")] <- grDevices::palette.colors()[1:2]
+	# Okabe-Ito colours readable on the light background (yellow and light grey are left out), then
+	# as many further distinct colours as needed, so a model with many components never runs out
+	base <- c("#009E73", "#0072B2", "#D55E00", "#CC79A7", "#56B4E9", "#8C6D1F", "#5D5D5D")
+	n <- sum(!names(colors)%in% c("intercept","residual"))
+	others <- if(n <= length(base)) base[seq_len(n)] else c(base, grDevices::hcl.colors(n-length(base), "Dark 3"))
+	colors[!names(colors) %in% c("intercept","residual") ] <- others
 	colors
 }
 

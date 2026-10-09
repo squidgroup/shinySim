@@ -10,7 +10,8 @@ shinySim(data.struc = NULL)
 \item{data.struc}{datastructure argument created using squidSim or other.}
 }
 \value{
-A simulated dataframe
+Called for its side effect of running the app, which shows the squidSim code for the
+simulation built in it (to copy into R) and the expected mean and variance of the response.
 }
 \description{
 shiny interface to the squidSim package.
