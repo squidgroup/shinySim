@@ -12,8 +12,8 @@
 
 shinySim is a **point-and-click interface to the
 [squidSim](https://github.com/squidgroup/squidSim) package**. It lets you build
-structured simulations — hierarchical data structures, predictors, and variance
-components across levels — without writing the simulation call by hand.
+structured simulations — predictors and variance components across the levels
+of a hierarchical data structure — without writing the simulation call by hand.
 
 ## Features
 
@@ -75,7 +75,7 @@ shinySim(data.struc = data_test)
 
 | Argument | Purpose |
 | :------- | :------ |
-| `data.struc` | A data structure created with `squidSim::make_structure()` or an equivalent data frame. Optional — leave empty to build one in the app. |
+| `data.struc` | A data structure created with `squidSim::make_structure()` or an equivalent data frame. Optional — without one, only observation-level predictors and interactions can be added. |
 
 ## Bug reports and contributions
 
