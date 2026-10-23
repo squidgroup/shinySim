@@ -10,6 +10,15 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE.md)
 <!-- badges: end -->
 
+> [!IMPORTANT]
+> **A development version with new features and bug fixes is available.** It
+> adds exact expected variances for interactions of any order, built-in checks
+> of the printed code, and fixes for printed code that could fail or simulate a
+> different model. See [what's new and
+> fixed](https://github.com/squidgroup/shinySim/blob/development/NEWS.md) and
+> [how to install it](#installation). **Found a bug? Please try the development
+> version first, as it may already be fixed.**
+
 shinySim is a **point-and-click interface to the
 [squidSim](https://github.com/squidgroup/squidSim) package**. It lets you build
 structured simulations — hierarchical data structures, predictors, and variance
@@ -30,14 +39,29 @@ components across levels — without writing the simulation call by hand.
 
 ## Installation
 
-shinySim is not on CRAN, but you can install the development version from GitHub
-using the devtools package:
+shinySim is not on CRAN, but you can install it from GitHub using the
+devtools package. There are two versions:
+
+**Stable version** (the `main` branch):
 
 ```r
 install.packages("devtools")
 devtools::install_github("squidgroup/shinySim")
-library(shinySim)
 ```
+
+**Development version** (the `development` branch), with the latest features and
+bug fixes ([what's new and
+fixed](https://github.com/squidgroup/shinySim/blob/development/NEWS.md)):
+
+```r
+devtools::install_github("squidgroup/shinySim", ref = "development")
+```
+
+To check which version you have, run `packageVersion("shinySim")`: 0.0.0.9000 is
+the stable version and 0.0.0.9001 the development version. To switch between
+them, run the other install command.
+
+Then load it with `library(shinySim)`.
 
 This will also install [squidSim](https://github.com/squidgroup/squidSim), which
 is not on CRAN and is declared via `Remotes:`.
@@ -75,6 +99,13 @@ shinySim(data.struc = data_test)
 
 Please file issues and feature requests at
 <https://github.com/squidgroup/shinySim/issues>. Pull requests are welcome.
+
+**Before reporting a bug, please install the development version (see
+[Installation](#installation)) and check whether the problem is still there.**
+Many bugs are already fixed on the `development` branch; they are listed in
+[NEWS.md](https://github.com/squidgroup/shinySim/blob/development/NEWS.md). When
+you file an issue, please include the output of `packageVersion("shinySim")` and
+`sessionInfo()`.
 
 Issues with the underlying simulation engine belong upstream at
 [squidgroup/squidSim](https://github.com/squidgroup/squidSim).
