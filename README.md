@@ -70,7 +70,7 @@ them, run the other install command.
 Then load it with `library(shinySim)`.
 
 This will also install [squidSim](https://github.com/squidgroup/squidSim), which
-is not on CRAN and is declared via `Remotes:`.
+is not on CRAN.
 
 ## Usage
 
