@@ -51,8 +51,8 @@ devtools package. There are two versions:
 **Stable version** (the `main` branch):
 
 ```r
-install.packages("devtools")
-devtools::install_github("squidgroup/shinySim")
+install.packages("pak")
+pak::pak("squidgroup/shinySim")
 ```
 
 **Development version** (the `development` branch), with the latest features and
@@ -60,7 +60,7 @@ bug fixes ([what's new and
 fixed](https://github.com/squidgroup/shinySim/blob/development/NEWS.md)):
 
 ```r
-devtools::install_github("squidgroup/shinySim", ref = "development")
+pak::pak("squidgroup/shinySim@development")
 ```
 
 To check which version you have, run `packageVersion("shinySim")`: 0.0.0.9000 is
