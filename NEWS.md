@@ -1,4 +1,4 @@
-# shinySim (development version)
+# shinySim 0.0.0.9001 (development version)
 
 Version 0.0.0.9001, on the `development` branch. The stable version on `main` is
 0.0.0.9000. Check which one you have with `packageVersion("shinySim")`.
