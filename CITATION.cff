@@ -9,8 +9,8 @@ authors:
     given-names: "Joel L."
     orcid: "https://orcid.org/0000-0002-6295-3742"
 title: "shinySim: Shiny interface to the squidSim simulation package"
-abstract: "A point-and-click Shiny interface to squidSim for building structured simulations, allowing users to define hierarchical data structures and variance components without writing simulation code by hand."
-version: 0.0.0.9000
+abstract: "A point-and-click Shiny interface to squidSim for building structured simulations, allowing users to define predictors and variance components across the levels of a hierarchical data structure without writing simulation code by hand."
+version: 0.0.0.9001
 url: "https://github.com/squidgroup/shinySim"
 repository-code: "https://github.com/squidgroup/shinySim"
 license: MIT

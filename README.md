@@ -36,17 +36,20 @@ of a hierarchical data structure — without writing the simulation call by hand
   so what you are building stays legible.
 - **See the expected variance decomposition.** The app calculates the expected
   mean and variance of the response, and how the variance divides among
-  hierarchical levels and predictors. This includes the covariances that fixed
-  effects, interactions and covariates create. Each time you add or update a
+  hierarchical levels and predictors. The grand variance and the predictor table
+  include the covariances that fixed effects, interactions and covariates create;
+  the table by level leaves out covariances between components, so it may not add
+  up to the grand variance. Each time you add or update a
   component, the app also runs a quick squidSim simulation and warns you if its
-  mean or variance differs from the expected values by more than 10%.
-- **Get the code back.** The equivalent `squidSim` call is shown as code you can copy, so simulations remain reproducible outside the app. Run it with `squidSim::simulate_population()` to generate the data.
+  variance differs from the expected value by more than 10%, or its mean by more
+  than 0.1 standard deviations.
+- **Get the code back.** The app shows the `parameters` list for squidSim, with a button to copy it, so simulations remain reproducible outside the app. To generate data, paste it into R and run `sim <- squidSim::simulate_population(data_structure = data_test, parameters = parameters)`, then `squidSim::get_population_data(sim)`. If you used no data structure, give the sample size with `n =` instead of `data_structure =`.
 - **Runs locally.** Nothing is uploaded anywhere.
 
 ## Installation
 
 shinySim is not on CRAN, but you can install it from GitHub using the
-devtools package. There are two versions:
+pak package. There are two versions:
 
 **Stable version** (the `main` branch):
 
@@ -128,7 +131,7 @@ Issues with the underlying simulation engine belong upstream at
 Please cite the package:
 
 > Ivimey-Cook, E. R., & Pick, J. L. (2026). *shinySim: Shiny interface to the
-> squidSim simulation package.* R package version 0.0.0.9000.
+> squidSim simulation package.* R package version 0.0.0.9001.
 > <https://github.com/squidgroup/shinySim>
 
 A machine-readable [`CITATION.cff`](CITATION.cff) is included, so GitHub's
