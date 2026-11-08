@@ -21,26 +21,29 @@
 
 shinySim is a **point-and-click interface to the
 [squidSim](https://github.com/squidgroup/squidSim) package**. It lets you build
-structured simulations — hierarchical data structures, predictors, and variance
-components across levels — without writing the simulation call by hand.
+structured simulations — predictors and variance components across the levels
+of a hierarchical data structure — without writing the simulation call by hand.
 
 ## Features
 
-- **Build a data structure interactively.** Define nested and crossed levels,
-  sample sizes, and repeat observations, or pass in a structure you already have.
+- **Start from your data structure.** Pass in a structure made with
+  `squidSim::make_structure()` (or any data frame of grouping factors) and build
+  the simulation on its levels.
 - **Set variance components per level.** Specify predictors, betas, and
   (co)variances for each grouping factor.
 - **See the equations as you go.** The app writes out the model being simulated,
   so what you are building stays legible.
-- **Inspect simulated variances.** Check that the realised variance components
-  match what you asked for before you commit to a design.
-- **Get the code back.** The equivalent `squidSim` call is returned as code you can copy so simulations remain reproducible outside the app.
+- **See the expected variance decomposition.** The app calculates the expected
+  mean and variance of the response from the parameters you enter, and how the
+  variance divides among hierarchical levels and predictors. These are
+  calculated values; nothing is simulated in the app.
+- **Get the code back.** The app shows the `parameters` list for squidSim, which you can select and copy into R. To generate data, pass it to squidSim with the same data structure: `sim <- squidSim::simulate_population(data_structure = data_test, parameters = parameters)`, then `squidSim::get_population_data(sim)`. If you used no data structure, give the sample size with `n =` instead of `data_structure =`.
 - **Runs locally.** Nothing is uploaded anywhere.
 
 ## Installation
 
 shinySim is not on CRAN, but you can install it from GitHub using the
-devtools package. There are two versions:
+pak package. There are two versions:
 
 **Stable version** (the `main` branch):
 
@@ -93,7 +96,7 @@ shinySim(data.struc = data_test)
 
 | Argument | Purpose |
 | :------- | :------ |
-| `data.struc` | A data structure created with `squidSim::make_structure()` or an equivalent data frame. Optional — leave empty to build one in the app. |
+| `data.struc` | A data structure created with `squidSim::make_structure()` or an equivalent data frame. Optional — without one, only observation-level predictors and interactions can be added. |
 
 ## Bug reports and contributions
 
