@@ -13,9 +13,7 @@ Version 0.0.0.9001, on the `development` branch. The stable version on `main` is
   interactions allowed for covariance between their variables; interactions of
   three or more variables assumed the variables were independent.
 * **Built-in checks.** Before a change is accepted, the code the app would print
-  is run through squidSim and compared with the app's own parameters. The app
-  also runs a quick squidSim simulation and warns if its mean or variance differs
-  from the expected values by more than 10%.
+  is run through squidSim and compared with the app's own parameters.
 * **Input checks.** The app refuses a variance-covariance matrix squidSim cannot
   simulate from, invalid or duplicate variable names (issue #25), names that
   clash with data-structure columns, fixed categorical names that don't match the
@@ -52,6 +50,18 @@ Version 0.0.0.9001, on the `development` branch. The stable version on `main` is
 * The variance bar plot failed with "figure margins too large" in a small
   window.
 * `shinySim()` no longer writes `data.struc` into your global environment.
+* In the "Update" tab the intercept box showed 0 after switching tabs, and
+  pressing "Update" then set the intercept to 0. It now shows the current
+  intercept.
+* The equation showed an empty term (`+ +`) for a variable or interaction with a
+  beta of 0. Such terms are now left out.
+* Squared terms (an interaction of a variable with itself, e.g. `x:x`) showed
+  the variable only once in the equation, and a variable with a beta of 0
+  disappeared from the interactions that use it.
+* The "Component Type" label stayed on screen after choosing the residual, or
+  after updating or deleting a component.
+* Random effects reopened in the "Update" tab as "predictor", with an editable
+  mean.
 
 ## Other changes
 

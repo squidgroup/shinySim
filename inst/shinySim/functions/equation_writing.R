@@ -101,16 +101,16 @@ make_equation<-function(parameters, print_colours=TRUE){
 		),
 	"")
 
-	## add colours and subscripts to variables
-	all$variable_display <- ifelse(all$display,
-		paste0(
+	## add colours and subscripts to variables (the symbol is kept for interactions even when the
+	## variable's own beta is 0 and it isn't shown as a term of its own)
+	all$symbol <- paste0(
 			if(print_colours){paste0("\\color{",all$color,"}{")},
 			all$letter,"_{",
 			ifelse(all$display_n,paste0(all$variable_n,","),""),
 			all$subscript,"}",
 			if(print_colours){"}"}
-		),
-	"")
+		)
+	all$variable_display <- ifelse(all$display, all$symbol, "")
 
 	## make interaction terms
 	if("interactions" %in% components){
@@ -124,19 +124,19 @@ make_equation<-function(parameters, print_colours=TRUE){
 					if(print_colours){"}"}
 				),"")
 
-		int_print <- paste(int_beta_print,sapply(strsplit(int_names,":"), function(x) paste(all$variable_display[all$names %in% x],collapse=" ")))
+		## match() keeps repeated variables, so e.g. x:x is shown as x x (a squared term)
+		int_print <- ifelse(int_betas==0, "",
+			paste(int_beta_print,sapply(strsplit(int_names,":"), function(x) paste(all$symbol[match(x, all$names)],collapse=" "))))
 	}
 
 	part_print <- paste0(all$beta_display,all$variable_display)
 
-	## make latex equation
-	print_equation <- 
-			paste(
-				c("y = \\beta_0",
-					part_print[which(all$component!="residual")],
-				  if("interactions" %in% components){int_print},
-				  part_print[which(all$component=="residual")]),
-				collapse=" + ")
+	## make latex equation (terms with a beta of 0 are left out)
+	terms <- trimws(c(
+		part_print[which(all$component!="residual")],
+		if("interactions" %in% components){int_print},
+		part_print[which(all$component=="residual")]))
+	print_equation <- paste(c("y = \\beta_0", terms[nzchar(terms)]), collapse=" + ")
 	
 	## make components string
 	print_components <- paste("response =",paste(paste0(

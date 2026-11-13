@@ -44,8 +44,8 @@ ui <- function() {
       # Action button as the logo
       shiny::actionButton(
         inputId = "citeme",
-        label = shiny::tags$img(src = "logo_1.png", height = "40px", width = "40px"),
-        style = "position: absolute; right: 50px; background-color: #5E81AC; border-color: #5E81AC;",
+        label = shiny::tags$img(src = "shinySim_hex.png", height = "44px", alt = "shinySim"),
+        style = "position: absolute; right: 50px; top: 4px; padding: 2px 4px; background-color: #5E81AC; border-color: #5E81AC;",
       ) |>
         prompter::add_prompt(
           position = "left",
@@ -457,36 +457,26 @@ ui <- function() {
             title = "Variance Decomposition",
             shiny::uiOutput("output_variance"),
             br(),
+            # two columns that sit side by side in wide windows and stack in narrow ones; a table
+            # too wide for its column scrolls sideways instead of being cut off or overlapping
             fluidRow(
               column(
-                width = 12,
-                splitLayout(
-                  cellWidths = c("50%", "50%"),
-                  # let the headings wrap rather than overlap in narrow windows
-                  cellArgs = list(style = "white-space: normal; padding-right: 8px;"),
-                  "Contribution of different hierarchical levels:",
-                  "Contribution of different predictors:"
-                )
-              )
-            ),
-            fluidRow(
+                width = 6,
+                shiny::tags$p("Contribution of different hierarchical levels:"),
+                shiny::tags$div(
+                  style = "overflow-x: auto;",
+                  shiny::tableOutput("output_variance_mid_tab")
+                ),
+                shiny::plotOutput("output_variance_mid_plot", height = "250px", width = "100%")
+              ),
               column(
-                width = 12,
-                splitLayout(
-                  cellWidths = c("50%", "50%"),
-                  shiny::tableOutput("output_variance_mid_tab"),
+                width = 6,
+                shiny::tags$p("Contribution of different predictors:"),
+                shiny::tags$div(
+                  style = "overflow-x: auto;",
                   shiny::tableOutput("output_variance_right_tab")
-                )
-              )
-            ),
-            fluidRow(
-              column(
-                width = 12,
-                splitLayout(
-                  cellWidths = c("50%", "50%"),
-                  shiny::plotOutput("output_variance_mid_plot", height = "250px", width = "100%"),
-                  shiny::plotOutput("output_variance_right_plot", height = "250px", width = "100%")
-                )
+                ),
+                shiny::plotOutput("output_variance_right_plot", height = "250px", width = "100%")
               )
             )
           )

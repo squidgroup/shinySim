@@ -45,7 +45,8 @@ server <- function(input, output, session) {
   # sorted_levels() (levels in the order squidSim uses them) is in functions/simulated_variances.R
 
   # Safety net: before a change is accepted, write the code the app would print, run it through
-  # squidSim and compare squidSim's mean and variance with the app's. Returns NULL if all is well,
+  # squidSim and check that squidSim reads the same parameters as the app (its reading, sim$param,
+  # gives the same expected mean and variance; no simulated data are compared). Returns NULL if all is well,
   # otherwise the problem (squidSim's own error message where there is one).
   squid_check <- function(p) {
     tryCatch({
@@ -81,56 +82,6 @@ server <- function(input, output, session) {
       }
     }, error = function(e) conditionMessage(e))
   }
-  # Independent check of the mean and variance shown in the app (squid_check above only checks that
-  # the printed code matches the app's parameters): simulate a large population with squidSim from
-  # the printed code and compare its mean and variance with the app's. The data structure is repeated
-  # with the groups of simulated effects renumbered in each copy, so random effects have many levels,
-  # while fixed categorical and covariate columns keep their values (same proportions and values).
-  # Returns NULL if they agree, otherwise a message. Not used to refuse changes, only to warn.
-  mc_check <- function(p, n_target = 20000) {
-    tryCatch({
-      env <- new.env()
-      eval(parse(text = make_equation(p, print_colours = FALSE)$code), envir = env)
-      if (nrow(data.struc) > 0) {
-        comps <- p[setdiff(names(p), c("intercept", "interactions"))]
-        struc_groups <- unique(unlist(lapply(comps, function(x) if (isTRUE(x$fixed) || isTRUE(x$covariate)) x$group)))
-        sim_groups <- setdiff(unique(unlist(lapply(comps, function(x) if (!isTRUE(x$fixed) && !isTRUE(x$covariate)) x$group))),
-                              c("observation", "residual"))
-        # a column used both for simulated effects and as a fixed/covariate column can't be renumbered
-        if (any(sim_groups %in% struc_groups)) return(NULL)
-        k <- ceiling(n_target / nrow(data.struc))
-        big <- do.call(rbind, lapply(seq_len(k), function(r) {
-          d <- data.struc
-          for (cl in sim_groups) d[[cl]] <- paste(r, d[[cl]], sep = "_")
-          d
-        }))
-        for (cl in sim_groups) big[[cl]] <- as.integer(factor(big[[cl]]))
-        sim <- suppressMessages(suppressWarnings(
-          squidSim::simulate_population(data_structure = big, parameters = env$parameters)
-        ))
-      } else {
-        sim <- suppressMessages(suppressWarnings(
-          squidSim::simulate_population(n = n_target, parameters = env$parameters)
-        ))
-      }
-      y <- as.vector(sim$y[[1]])
-      app <- simVar(p, data.struc)$total
-      sd_app <- sqrt(max(app[["var"]], 0))
-      if (abs(mean(y) - app[["mean"]]) > 0.1 * sd_app + 1e-8 ||
-          abs(stats::var(y) - app[["var"]]) > 0.1 * app[["var"]] + 1e-8) {
-        paste0("A test simulation with squidSim gave mean ", signif(mean(y), 3), " and variance ",
-               signif(stats::var(y), 3), ", which differ from the values shown (", signif(app[["mean"]], 3),
-               " and ", signif(app[["var"]], 3), "). The expected values shown may be inaccurate.")
-      } else {
-        NULL
-      }
-    }, error = function(e) NULL)
-  }
-  mc_warn <- function(p) {
-    problem <- mc_check(p)
-    if (!is.null(problem)) shiny::showNotification(problem, type = "warning", duration = 15)
-  }
-
   squid_refuse <- function(problem) {
     shinyalert::shinyalert(
       title = "squidSim can't use this",
@@ -609,7 +560,9 @@ server <- function(input, output, session) {
           vcov = unname(as.matrix(vcov_tab$x)),
           names = v_names_full,
           fixed = comp_type == "fixed categorical",
-          covariate = comp_type == "covariate"
+          covariate = comp_type == "covariate",
+          # only used by the app (so the Update tab shows the type it was added as); not printed in the code
+          random = comp_type == "random"
         )
       }
       candidate <- param_list$x
@@ -639,7 +592,6 @@ server <- function(input, output, session) {
       ## update equation
       output_list$x <- make_equation(param_list$x, print_colours = TRUE)
       var_list$x <- simVar(param_list$x, data.struc)
-      mc_warn(param_list$x)
 
       ## restore everything (the interaction pickers are refreshed by their observer)
       manyToggle(hide = c("component_type", "input_variable_no", "name_panel", "mean_panel", "vcov_panel", "beta_panel"))
@@ -672,13 +624,16 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$choose_component, {
     update_param <- param_list$x[[input$choose_component]]
 
+    type_label_ids <- c("component_type_edit_div", "component_type_edit_div_print", "component_type_edit_print")
     if (input$choose_component %in% c("", "intercept", "observation", "interactions", "residual")) {
-      manyToggle(hide = c("component_type_edit_print"))
+      manyToggle(hide = type_label_ids)
     } else {
-      component_type_edit <- if (update_param$covariate) {
+      component_type_edit <- if (isTRUE(update_param$covariate)) {
         "covariate"
-      } else if (update_param$fixed) {
+      } else if (isTRUE(update_param$fixed)) {
         "fixed categorical"
+      } else if (isTRUE(update_param$random)) {
+        "random"
       } else {
         "predictor"
       }
@@ -687,20 +642,23 @@ server <- function(input, output, session) {
         paste(component_type_edit)
       )
 
-      output$component_type_edit_print <- renderText(
-        paste(component_type_edit)
-      )
-
       if (component_type_edit == c("predictor")) {
         manyToggle(
-          show = c("beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit", "component_type_edit_div_print", "component_type_edit_div", "component_type_edit_print"),
+          show = c("beta_panel_edit", "mean_panel_edit", "vcov_panel_edit", "name_panel_edit", type_label_ids),
           hide = c("intercept_panel")
+        )
+      }
+
+      if (component_type_edit == c("random")) {
+        manyToggle(
+          show = c("beta_panel_edit", "vcov_panel_edit", "name_panel_edit", type_label_ids),
+          hide = c("mean_panel_edit", "intercept_panel")
         )
       }
 
       if (component_type_edit %in% c("fixed categorical", "covariate")) {
         manyToggle(
-          show = c("beta_panel_edit", "name_panel_edit", "component_type_edit_div_print", "component_type_edit_print"),
+          show = c("beta_panel_edit", "name_panel_edit", type_label_ids),
           hide = c("vcov_panel_edit", "mean_panel_edit", "intercept_panel")
         )
       }
@@ -727,6 +685,9 @@ server <- function(input, output, session) {
     }
 
     if (input$choose_component %in% c("intercept")) {
+      # show the intercept currently in the model (the box is reset to 0 when tabs are switched,
+      # and pressing Update would otherwise overwrite the intercept with that 0)
+      shiny::updateNumericInput(session = session, inputId = "intercept_panel", value = param_list$x$intercept)
       manyToggle(
         show = "intercept_panel",
         hide = c("name_panel_edit", "beta_panel_edit", "mean_panel_edit", "vcov_panel_edit")
@@ -983,8 +944,9 @@ server <- function(input, output, session) {
     output_list$x <- make_equation(param_list$x, print_colours = TRUE)
 
     var_list$x <- simVar(param_list$x, data.struc)
-    mc_warn(param_list$x)
 
+    shinyjs::hide("component_type_edit_div")
+    shinyjs::hide("component_type_edit_div_print")
     shinyjs::hide("component_type_edit_print")
     shinyjs::hide("name_panel_edit")
     shinyjs::hide("mean_panel_edit")
@@ -1254,9 +1216,9 @@ server <- function(input, output, session) {
       confirmButtonText = "OK",
       confirmButtonCol = "#AEDEF4",
       animation = TRUE,
-      imageUrl = "squidSim_logo.png",
-      imageHeight = "88",
-      imageWidth = "80"
+      imageUrl = "shinySim_hex.png",
+      imageHeight = "100",
+      imageWidth = "90"
     )
   })
 
