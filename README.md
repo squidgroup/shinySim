@@ -128,11 +128,12 @@ Issues with the underlying simulation engine belong upstream at
 
 Please cite the package:
 
-> Ivimey-Cook, E. R., & Pick, J. L. (2026). *shinySim: Shiny interface to the
-> squidSim simulation package.* R package version 0.0.0.9001.
+> Ivimey-Cook, E. R., & Pick, J. L. (2026). *shinySim: Build squidSim
+> simulations of hierarchical data in a point-and-click app.* R package version
+> 0.0.0.9001.
 > <https://github.com/squidgroup/shinySim>
 
-A machine-readable [`CITATION.cff`](CITATION.cff) is included, so GitHub's
+A machine-readable [`CITATION.cff`](https://github.com/squidgroup/shinySim/blob/HEAD/CITATION.cff) is included, so GitHub's
 "Cite this repository" button gives formatted APA and BibTeX.
 
 ## Contact

@@ -8,7 +8,7 @@ authors:
   - family-names: "Pick"
     given-names: "Joel L."
     orcid: "https://orcid.org/0000-0002-6295-3742"
-title: "shinySim: Shiny interface to the squidSim simulation package"
+title: "shinySim: Build squidSim simulations of hierarchical data in a point-and-click app"
 abstract: "A point-and-click Shiny interface to squidSim for building structured simulations, allowing users to define predictors and variance components across the levels of a hierarchical data structure without writing simulation code by hand."
 version: 0.0.0.9001
 url: "https://github.com/squidgroup/shinySim"

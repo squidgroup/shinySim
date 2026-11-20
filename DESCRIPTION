@@ -1,5 +1,5 @@
 Package: shinySim
-Title: Shiny Interface to the squidSim Simulation Package
+Title: Build squidSim Simulations of Hierarchical Data in a Point-and-Click App
 Version: 0.0.0.9001
 Authors@R: c(
     person("Edward R.", "Ivimey-Cook", , "e.ivimeycook@gmail.com", role = c("aut", "cre"),
@@ -17,7 +17,6 @@ Description: Provides a point-and-click Shiny interface to the squidSim
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
     bs4Dash,
     DT,
@@ -37,3 +36,4 @@ Remotes:
 URL: https://github.com/squidgroup/shinySim,
     https://squidgroup.github.io/shinySim/
 BugReports: https://github.com/squidgroup/shinySim/issues
+Config/roxygen2/version: 8.1.1

@@ -2,19 +2,40 @@
 % Please edit documentation in R/run.R
 \name{shinySim}
 \alias{shinySim}
-\title{shinySim}
+\title{Build a squidSim simulation in a point-and-click app}
 \usage{
 shinySim(data.struc = NULL)
 }
 \arguments{
-\item{data.struc}{datastructure argument created using squidSim or other.}
+\item{data.struc}{Optional data structure to build the simulation on: a data
+frame of grouping factors, one column per level and one row per
+observation, usually made with \code{\link[squidSim:make_structure]{squidSim::make_structure()}}. If \code{NULL}
+(the default), the app starts without one and the code it gives uses
+a sample size (\verb{n =}) instead of \verb{data_structure =}.}
 }
 \value{
-Called for its side effect of running the app, which shows the squidSim code for the
-simulation built in it (to copy into R) and the expected mean and variance of the response.
+Called for its side effect of running the app; returns nothing
+useful. The simulation code is copied out of the app.
 }
 \description{
-shiny interface to the squidSim package.
+Opens the shinySim app, a point-and-click interface to the
+\href{https://github.com/squidgroup/squidSim}{squidSim} package for simulating
+hierarchical (multilevel) data. Starting from a data structure, you add
+predictors, fixed effects, interactions and variance components at each
+level, and the app builds the matching squidSim \code{parameters} list for you.
+
+As you go, the app shows:
+\itemize{
+\item the model equation being simulated;
+\item the expected mean and variance of the response, and how the variance
+divides among levels and predictors;
+\item a check from a quick simulation, with a warning if its variance or mean
+differs noticeably from the expected values;
+\item the squidSim code, with a button to copy it into R.
+}
+
+Paste that code into R and run \code{\link[squidSim:simulate_population]{squidSim::simulate_population()}} to
+generate datasets. Nothing is uploaded anywhere: the app runs locally.
 }
 \examples{
 \dontrun{
@@ -22,4 +43,9 @@ data_test <- squidSim::make_structure("sex(2)/individual(10)",
 repeat_obs=2,level_names=list(sex=c("F","M")))
 shinySim(data.struc = data_test)
 }
+}
+\seealso{
+\code{\link[squidSim:make_structure]{squidSim::make_structure()}} to make a data structure,
+\code{\link[squidSim:simulate_population]{squidSim::simulate_population()}} to simulate data with the code from the
+app.
 }

@@ -3,14 +3,17 @@
 \docType{package}
 \name{shinySim-package}
 \alias{shinySim-package}
-\title{shinySim: Shiny Interface to the squidSim Simulation Package}
+\title{shinySim: Build squidSim Simulations of Hierarchical Data in a Point-and-Click App}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Provides a point-and-click Shiny interface to the squidSim package for building structured simulations. Users supply a hierarchical data structure, specify predictors and variance components across its levels, and get the equivalent squidSim code without writing it by hand, together with the model equation and the expected mean and variance decomposition of the response. The code can be copied into R to simulate datasets with squidSim.
 }
 \seealso{
 Useful links:
 \itemize{
   \item \url{https://github.com/squidgroup/shinySim}
+  \item \url{https://squidgroup.github.io/shinySim/}
   \item Report bugs at \url{https://github.com/squidgroup/shinySim/issues}
 }
 
@@ -20,6 +23,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Edward R. Ivimey-Cook \email{e.ivimeycook@gmail.com} (\href{https://orcid.org/0000-0003-4910-0443}{ORCID})
   \item Joel L. Pick \email{joel.l.pick@gmail.com} (\href{https://orcid.org/0000-0002-6295-3742}{ORCID})
 }
 
