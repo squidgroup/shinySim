@@ -34,5 +34,6 @@ Imports:
     stats
 Remotes:
     squidgroup/squidSim
-URL: https://github.com/squidgroup/shinySim
+URL: https://github.com/squidgroup/shinySim,
+    https://squidgroup.github.io/shinySim/
 BugReports: https://github.com/squidgroup/shinySim/issues

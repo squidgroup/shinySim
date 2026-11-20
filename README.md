@@ -1,10 +1,8 @@
 <p align="center">
-  <img src="inst/shinySim/www/squidSim_logo.png" width = "200"/>
+  <a href="https://squidgroup.github.io/shinySim/"><img src="man/figures/logo.png" width="200" alt="shinySim logo"/></a>
 </p>
 
-<div align="center">
- <h1>shinySim</h1>
-</div>
+<h1 align="center">shinySim</h1>
 
 <!-- badges: start -->
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE.md)
