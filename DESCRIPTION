@@ -34,6 +34,6 @@ Imports:
 Remotes:
     squidgroup/squidSim
 URL: https://github.com/squidgroup/shinySim,
-    https://squidgroup.github.io/shinySim/
+    https://squidgroup.org/shinySim/
 BugReports: https://github.com/squidgroup/shinySim/issues
 Config/roxygen2/version: 8.1.1

@@ -13,7 +13,7 @@ Provides a point-and-click Shiny interface to the squidSim package for building 
 Useful links:
 \itemize{
   \item \url{https://github.com/squidgroup/shinySim}
-  \item \url{https://squidgroup.github.io/shinySim/}
+  \item \url{https://squidgroup.org/shinySim/}
   \item Report bugs at \url{https://github.com/squidgroup/shinySim/issues}
 }
 

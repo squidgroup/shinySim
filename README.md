@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://squidgroup.github.io/shinySim/"><img src="man/figures/logo.png" width="200" alt="shinySim logo"/></a>
+  <a href="https://squidgroup.org/shinySim/"><img src="man/figures/logo.png" width="200" alt="shinySim logo"/></a>
 </p>
 
 <h1 align="center">shinySim</h1>
